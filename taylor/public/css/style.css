@@ -1,0 +1,14 @@
+body {
+  background-color: #f9fafb;
+}
+
+nav ul li a {
+  color: darkblue;
+  font-weight: 600;
+}
+
+main {
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+}
