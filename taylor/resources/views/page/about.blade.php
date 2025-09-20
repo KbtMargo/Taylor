@@ -47,8 +47,8 @@
         <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-target h-8 w-8 text-blue-600" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div>
         <h3>Наша місія</h3>
         <p>
-          З’єднувати клієнтів з талановитими майстрами для створення унікального одягу,
-          який підкреслює індивідуальність кожної людини.
+З'єднувати клієнтів з талановитими майстрами для створення унікального одягу, який підкреслює індивідуальність кожної людини.
+
         </p>
       </article>
 
@@ -56,16 +56,16 @@
         <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart h-8 w-8 text-blue-600" aria-hidden="true"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg></div>
         <h3>Наші цінності</h3>
         <p>
-          Якість, індивідуальність, професіоналізм і повага до ремісництва.
-          Кожен заслуговує на одяг, створений спеціально для нього.
+Якість, індивідуальність, професіоналізм та повага до ремісництва. Ми віримо, що кожна людина заслуговує на одяг, створений спеціально для неї.
+
         </p>
       </article>
 
       <article class="card elevated">
 <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-award h-8 w-8 text-blue-600" aria-hidden="true"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"></path><circle cx="12" cy="8" r="6"></circle></svg></div>        <h3>Наша експертиза</h3>
-        <p>
-          Поєднуємо традиційне ремісництво з сучасними інноваціями.
-          Багаторічний досвід у моді та технологіях.
+          <h3>Наша експертиза</h3>       
+<p>
+          Команда DressCode має багаторічний досвід у сфері моди та технологій. Ми знаємо, як поєднати традиційне ремісництво з сучасними інноваціями.
         </p>
       </article>
     </div>
