@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>@yield('title','App')</title>
 
-  {{-- Pico з CDN --}}
   <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
 
-  {{-- Твій кастомний файл --}}
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 

@@ -25,4 +25,8 @@ class PageController extends Controller
     {
         return view('page.faq');
     }
+    public function profile()
+    {
+        return view('page.profile');
+    }
 }

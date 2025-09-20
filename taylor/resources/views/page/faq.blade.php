@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title','Контакти')
+@section('title','Контакти | DressCode Website')
 
 @section('content')
-<h1>Контакти</h1>
+<h1>faq</h1>
 <p>проект</p>
 @endsection

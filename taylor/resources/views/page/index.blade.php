@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','Головна')
+@section('title','Головна | DressCode Website')
 
 @section('content')
 <h1>Головна</h1>
