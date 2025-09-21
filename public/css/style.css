@@ -1,3 +1,121 @@
+/*VVVVVVVVVVV*/
+/* Контейнер сторінки */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Відступи для header, main і footer */
+.container-padding {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* Основний контент */
+.main-content {
+    flex: 1;
+    margin-top: 0rem;
+    background: linear-gradient(to right, #d7e6f5, #ffffff); /* світло-синій → білий */
+    padding: 2rem;
+    border-radius: 0; /* прибираємо округлі краї */
+    box-shadow: none; /* прибираємо тінь */
+}
+
+
+/* Header */
+.header {
+  background-color: #fffafa; /* світлий сірий фон */
+  border-bottom: 2px solid #d4d4d4; /* товста сіренька лінія */
+  padding-bottom: 0rem; /* відступ від лінії до контенту header */
+
+}
+
+/* Footer */
+.footer {
+  background: linear-gradient(135deg, #04214d, #1d40cb);
+  margin-top: 0rem;
+  padding: 1rem 0;
+  border-top: none; /* прибираємо верхню лінію */
+  text-align: center;
+  font-size: 0.9rem;
+  color: #e2e2e2;
+}
+
+/* Центрування контенту головної сторінки */
+.home-content {
+  text-align: center;
+  margin: 2rem auto;
+  max-width: 700px;
+}
+
+.home-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #000000;
+}
+
+.home-content p {
+font:
+  1.2rem "Fira Sans",
+  sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.home-content .btn {
+  display: inline-block;
+  margin-top: 1.5rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+  color: white;
+  background-color: #141768;
+  transition: background-color 0.3s ease;
+}
+
+
+/* Стиль кнопок у хедері */
+.header nav a {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #1b3db7;               /* текст синій за замовчуванням */
+    border: 1.5px solid #002de1;    /* синя обводка */
+    background-color: transparent; /* прозорий фон за замовчуванням */
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin-right: 0.5rem;          /* відступ між кнопками */
+    cursor: pointer;
+}
+
+/* При наведенні */
+.header nav a:hover {
+    background-color: #1b3db7; /* залитий фон при hover */
+    color: white;              /* білий текст */
+}
+
+/* Активна сторінка */
+.header nav a.active {
+    background-color: #1b3db7; /* завжди залита */
+    color: white;               /* текст білий */
+}
+.home-image img {
+    max-height: 500px; /* або інше значення */
+    object-fit: cover;
+
+    display: flex;
+    align-items: center; /* вирівнювання по вертикалі */
+    gap: 2rem;
+    min-height: 70vh;
+}
+
+/*VVVVVVVVVVVVVVVVV */
+
 .about-section {
     text-align: center;
     max-width: 700px;
@@ -51,11 +169,11 @@
         max-width: 400px;
         margin: 0 auto;
     }
-    
+
     .about-hero .media img {
         height: 280px;
     }
-    
+
     .split:not(.about-hero) .media img {
         height: 230px;
     }
@@ -65,11 +183,11 @@
     .split .media img {
         height: 200px;
     }
-    
+
     .about-hero .media img {
         height: 220px;
     }
-    
+
     .split:not(.about-hero) .media img {
         height: 180px;
     }
@@ -609,17 +727,17 @@ input:focus, select:focus, textarea:focus {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-    
+
     .cards-3 {
         grid-template-columns: 1fr;
         gap: 1.2rem;
     }
-    
+
     .stats-4 {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.2rem;
     }
-    
+
     .contact-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
@@ -630,27 +748,27 @@ input:focus, select:focus, textarea:focus {
     .stats-4 {
         grid-template-columns: 1fr;
     }
-    
+
     .grid2 {
         grid-template-columns: 1fr;
     }
-    
+
     .help .actions {
         flex-direction: column;
     }
-    
+
     .contact-list li {
         flex-direction: column;
     }
-    
+
     .contact-list .i {
         margin-bottom: 0.4rem;
     }
-    
+
     .about-section h1 {
         font-size: 1.7rem;
     }
-    
+
     .split h2, .about-center h2, .stats-strip h2, .contact-hero h2 {
         font-size: 1.4rem;
     }
