@@ -10,4 +10,4 @@ Route::get('/page/about', [PageController::class, 'about'])->name('page.about');
 Route::get('/page/atelier', [PageController::class, 'atelier'])->name('page.atelier');
 Route::get('/page/faq', [PageController::class, 'faq'])->name('page.faq');
 
-Route::fallback(fn() => response()->view('errors.404', [], 404));
+Route::get('/health', fn () => 'OK');
