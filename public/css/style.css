@@ -134,6 +134,7 @@ font:
     font-size: 1rem;
     line-height: 1.5;
     color: #555;
+    padding: 15px;
 }
 
 .split {
@@ -142,6 +143,7 @@ font:
     gap: 2rem;
     align-items: center;
     margin-bottom: 3rem;
+    padding: 30px;
 }
 
 .split .media img {
@@ -367,6 +369,7 @@ font:
     text-align: center;
     margin-bottom: 2rem;
     padding: 0 1rem;
+
 }
 
 .contact-hero h2 {
@@ -391,7 +394,8 @@ font:
 
 .contact-list {
     list-style: none;
-    padding: 0;
+    padding: 30px;
+
 }
 
 .contact-list li {
@@ -433,6 +437,8 @@ font:
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid #eee;
+    padding: 30px;
+
 }
 
 .social h4 {

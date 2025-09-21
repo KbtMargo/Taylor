@@ -217,7 +217,7 @@ public function profile()
         ],
         [
             'name' => 'Льон Класичний',
-            'image' => '/images/Льон класичний.jpg',
+            'image' => '/images/93bbdc587cbc2ee06b56b3ce27ef4dcc.jpg',
             'colors' => 'Бежевий, Коричневий, Темно-синій +2',
             'delivery' => '4-6 днів',
             'price' => '300 грн/м',

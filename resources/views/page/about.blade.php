@@ -11,7 +11,7 @@
     </p>
   </section>
 
-<section class="split about-hero card">
+<section class="split about-hero card border-0">
     <div>
       <h2>Наша історія</h2>
       <p>
