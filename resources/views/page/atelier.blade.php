@@ -1,4 +1,4 @@
-@extends('layouts.app')
+{{-- @extends(view: 'layouts.app') --}}
 
 @section('title','Ательє | DressCode Website')
 
