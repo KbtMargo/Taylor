@@ -12,7 +12,7 @@
 </form>
 
 @if(count($ateliers) > 0)
-<div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+<div style="display:flex; flex-direction:column; align-items:center; gap:20px;">
     @foreach($ateliers as $atelier)
         <a href="{{ route('page.atelier.show', $atelier['id']) }}"
            style="display:block; width:1300px; text-decoration:none; color:inherit;">

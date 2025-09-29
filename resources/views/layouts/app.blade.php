@@ -23,7 +23,7 @@
         <li><a href="{{ route('page.atelier') }}" class="{{ request()->routeIs('page.atelier') ? 'active' : '' }}">Ательє</a></li>
         <li><a href="{{ route(name: 'page.catalog') }}" class="{{ request()->routeIs('page.catalog') ? 'active' : '' }}">Каталог матеріалів</a></li>
         <li><a href="{{ route('page.about') }}" class="{{ request()->routeIs('page.about') ? 'active' : '' }}">Про нас</a></li>
-        <li><a href="{{ route(name: 'page.faq') }}" class="{{ request()->routeIs('page.faq') ? 'active' : '' }}">Контакти</a></li>
+        <li><a href="{{ route(name: 'page.faq') }}" class="{{ request()->routeIs('page.faq') ? 'active' : '' }}">FAQ</a></li>
       </ul>
     </nav>
   </header>
