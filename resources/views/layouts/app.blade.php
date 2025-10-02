@@ -1,40 +1,36 @@
-<!doctype html>
-<html lang="uk">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>@yield('title','App')</title>
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-</head>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <title>{{ config('app.name', 'Laravel') }}</title>
 
-<body class="page-container">
-<header class="header container-padding">
-    <nav>
-      <ul>
-        <li><span style="color: #1b3db7; font-size: 1.75rem;"> <strong>DressCode</strong></span></li>
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-      </ul>
-      <ul>
-        <li><a href="{{ route('page.index') }}" class="{{ request()->routeIs('page.index') ? 'active' : '' }}">Головна</a></li>
-        <li><a href="{{ route('page.atelier') }}" class="{{ request()->routeIs('page.atelier') ? 'active' : '' }}">Ательє</a></li>
-        <li><a href="{{ route(name: 'page.catalog') }}" class="{{ request()->routeIs('page.catalog') ? 'active' : '' }}">Каталог матеріалів</a></li>
-        <li><a href="{{ route('page.about') }}" class="{{ request()->routeIs('page.about') ? 'active' : '' }}">Про нас</a></li>
-        <li><a href="{{ route(name: 'page.faq') }}" class="{{ request()->routeIs('page.faq') ? 'active' : '' }}">FAQ</a></li>
-      </ul>
-    </nav>
-  </header>
+        <!-- Scripts -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
+    <body class="font-sans antialiased">
+        <div class="min-h-screen bg-gray-100">
+            @include('layouts.navigation')
 
-  <main class="main-content container-padding">
-    @yield('content')
-  </main>
+            <!-- Page Heading -->
+            @isset($header)
+                <header class="bg-white shadow">
+                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </header>
+            @endisset
 
-  <footer class="footer container-padding">
-    &copy; {{ date('Y') }} DressCode. Всі права захищені.
-  </footer>
-
-</body>
+            <!-- Page Content -->
+            <main>
+                {{ $slot }}
+            </main>
+        </div>
+    </body>
 </html>

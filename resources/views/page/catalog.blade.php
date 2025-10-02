@@ -21,15 +21,12 @@
             display:flex;
             flex-direction:column;
         ">
-            <!-- Фото -->
             <img src="{{ $material['image'] }}" alt="{{ $material['name'] }}" style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:10px;">
 
-            <!-- Інформація -->
             <h3 style="margin:5px 0;">{{ $material['name'] }}</h3>
             <p style="margin:3px 0;">{{ $material['colors'] }}</p>
             <p style="margin:3px 0;">{{ $material['delivery'] }}</p>
 
-            <!-- Ціна та наявність в одному рядку -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:auto;">
                 <span style="color:#007bff; font-weight:bold;">
                     {{ $material['price'] }}
@@ -49,7 +46,6 @@
     @endforeach
 </div>
 
-<!-- Адаптивність для менших екранів -->
 <style>
 @media (max-width: 1000px) {
     div[style*="grid-template-columns: repeat(3"] {
