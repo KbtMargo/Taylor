@@ -53,3 +53,12 @@ ENV APP_ENV=production \
 
 EXPOSE 10000
 CMD php -S 0.0.0.0:${PORT} -t public server.php
+
+# php 8.3 fpm alpine
+FROM php:8.3-fpm-alpine
+
+RUN apk add --no-cache php83-pecl-redis
+# якщо базовий образ не з Alpine PHP пакетами:
+# RUN apk add --no-cache $PHPIZE_DEPS \
+#     && pecl install redis \
+#     && docker-php-ext-enable redis

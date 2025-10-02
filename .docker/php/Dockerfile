@@ -61,6 +61,8 @@ RUN mkdir -p /var/log/php \
 COPY ./start.sh /usr/local/bin/start
 RUN chmod u+x /usr/local/bin/start
 
+RUN docker-php-ext-install pdo_mysql mysqli
+
 # Узгодження юзера www-data з твоїми UID/GID
 # (щоб файли в томах не створювались від root)
 RUN groupmod -o -g $GID www-data \
