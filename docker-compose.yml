@@ -46,24 +46,24 @@
 #   dbdata:
 
 
-
 services:
   php:
     build:
       context: .
       dockerfile: Dockerfile
     working_dir: /var/www
-    depends_on:
-      - db
     volumes:
       - ./:/var/www
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - laravel
 
   webserver:
     image: nginx:latest
     depends_on:
-      - php    
+      - php
     volumes:
       - ./:/var/www
       - ./docker/nginx/conf.d:/etc/nginx/conf.d
@@ -83,7 +83,12 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
     ports:
-      - "3307:3306"  
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     networks:
       - laravel
 
