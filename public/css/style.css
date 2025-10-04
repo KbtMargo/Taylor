@@ -1,48 +1,39 @@
-/*VVVVVVVVVVV*/
-/* Контейнер сторінки */
 .page-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-/* Відступи для header, main і footer */
 .container-padding {
   padding-left: 2rem;
   padding-right: 2rem;
 }
 
-/* Основний контент */
 .main-content {
     flex: 1;
     margin-top: 0rem;
-    background: linear-gradient(to right, #d7e6f5, #ffffff); /* світло-синій → білий */
+    background: linear-gradient(to right, #d7e6f5, #ffffff);
     padding: 2rem;
-    border-radius: 0; /* прибираємо округлі краї */
-    box-shadow: none; /* прибираємо тінь */
+    border-radius: 0;
+    box-shadow: none;
 }
 
-
-/* Header */
 .header {
-  background-color: #fffafa; /* світлий сірий фон */
-  border-bottom: 2px solid #d4d4d4; /* товста сіренька лінія */
-  padding-bottom: 0rem; /* відступ від лінії до контенту header */
-
+  background-color: #fffafa;
+  border-bottom: 2px solid #d4d4d4;
+  padding-bottom: 0rem;
 }
 
-/* Footer */
 .footer {
   background: linear-gradient(135deg, #04214d, #1d40cb);
   margin-top: 0rem;
   padding: 1rem 0;
-  border-top: none; /* прибираємо верхню лінію */
+  border-top: none;
   text-align: center;
   font-size: 0.9rem;
   color: #e2e2e2;
 }
 
-/* Центрування контенту головної сторінки */
 .home-content {
   text-align: center;
   margin: 2rem auto;
@@ -77,44 +68,37 @@ font:
   transition: background-color 0.3s ease;
 }
 
-
-/* Стиль кнопок у хедері */
 .header nav a {
     display: inline-block;
     padding: 10px 20px;
     font-size: 16px;
-    color: #1b3db7;               /* текст синій за замовчуванням */
-    border: 1.5px solid #002de1;    /* синя обводка */
-    background-color: transparent; /* прозорий фон за замовчуванням */
+    color: #1b3db7;
+    border: 1.5px solid #002de1;
+    background-color: transparent;
     border-radius: 8px;
     text-decoration: none;
     transition: all 0.3s ease;
-    margin-right: 0.5rem;          /* відступ між кнопками */
+    margin-right: 0.5rem;
     cursor: pointer;
 }
 
-/* При наведенні */
 .header nav a:hover {
-    background-color: #1b3db7; /* залитий фон при hover */
-    color: white;              /* білий текст */
+    background-color: #1b3db7;
+    color: white;
 }
 
-/* Активна сторінка */
 .header nav a.active {
-    background-color: #1b3db7; /* завжди залита */
-    color: white;               /* текст білий */
+    background-color: #1b3db7;
+    color: white;
 }
 .home-image img {
-    max-height: 500px; /* або інше значення */
+    max-height: 500px;
     object-fit: cover;
-
     display: flex;
-    align-items: center; /* вирівнювання по вертикалі */
+    align-items: center;
     gap: 2rem;
     min-height: 70vh;
 }
-
-/*VVVVVVVVVVVVVVVVV */
 
 .about-section {
     text-align: center;
@@ -148,23 +132,20 @@ font:
 
 .split .media img {
     width: 100%;
-    height: 300px; /* Фіксована висота */
-    object-fit: cover; /* Зберігає пропорції та заповнює область */
+    height: 300px;
+    object-fit: cover;
     border-radius: 6px;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Для секції з історією - трохи більше фото */
 .about-hero .media img {
     height: 350px;
 }
 
-/* Для секції досягнень - менше фото */
 .split:not(.about-hero) .media img {
     height: 400px;
 }
 
-/* Адаптивність для мобільних */
 @media (max-width: 992px) {
     .split .media img {
         height: 250px;
@@ -531,11 +512,10 @@ input:focus, select:focus, textarea:focus {
     cursor: pointer;
     text-decoration: none;
     text-align: center;
-    transition: background 0.3s ease;
 }
 
 .button:hover {
-    background: #3a5a80;
+    background: #6b95c9;
 }
 
 .button.w-100 {
@@ -598,136 +578,6 @@ input:focus, select:focus, textarea:focus {
     margin-top: 0.3rem;
 }
 
-
-/* .contact-form {
-    padding: 1.5rem;
-}
-
-.contact-form h3 {
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    color: #333;
-    font-size: 1.2rem;
-}
-
-.contact-form p.muted {
-    margin-bottom: 1.2rem;
-    font-size: 0.9rem;
-}
-
-.grid2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.8rem;
-}
-
-label {
-    display: block;
-    margin-bottom: 0.8rem;
-    font-weight: 500;
-    color: #333;
-    font-size: 0.9rem;
-}
-
-input, select, textarea {
-    width: 100%;
-    padding: 0.6rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 0.9rem;
-    margin-top: 0.4rem;
-}
-
-input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: #4a6fa5;
-    box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
-}
-
-.button {
-    display: inline-block;
-    background: #4a6fa5;
-    color: white;
-    padding: 0.6rem 1.2rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    text-decoration: none;
-    text-align: center;
-    transition: background 0.3s ease;
-}
-
-.button:hover {
-    background: #3a5a80;
-}
-
-.button.w-100 {
-    width: 100%;
-}
-
-.button.ghost {
-    background: transparent;
-    color: #4a6fa5;
-    border: 1px solid #4a6fa5;
-    padding: 0.5rem 1rem;
-}
-
-.button.ghost:hover {
-    background: #f8f9fa;
-}
-
-.button.secondary {
-    background: #6c757d;
-    padding: 0.5rem 1rem;
-}
-
-.button.secondary:hover {
-    background: #5a6268;
-}
-
-.help.card.soft {
-    background: #f8f9fa;
-    border-radius: 6px;
-    padding: 1.2rem;
-    margin-top: 1.5rem;
-}
-
-.help .row {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.8rem;
-}
-
-.help .i {
-    font-size: 1.5rem;
-    flex-shrink: 0;
-}
-
-.help h3 {
-    margin-top: 0;
-    margin-bottom: 0.4rem;
-    color: #333;
-    font-size: 1rem;
-}
-
-.help p.muted {
-    font-size: 0.85rem;
-    margin-bottom: 0.8rem;
-}
-
-.help .actions {
-    display: flex;
-    gap: 0.8rem;
-    margin-top: 0.8rem;
-}
-
-.mt-2 {
-    margin-top: 1.5rem;
-} */
-
 @media (max-width: 992px) {
     .split {
         grid-template-columns: 1fr;
@@ -779,4 +629,3 @@ input:focus, select:focus, textarea:focus {
         font-size: 1.4rem;
     }
 }
-

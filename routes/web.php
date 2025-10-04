@@ -25,19 +25,19 @@ Route::get('/page/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/page/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/page/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/page/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile',[ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile',[ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 Route::middleware(['web','auth'])->prefix('atelier')->name('atelier.')->group(function () {
-    Route::resource('posts', PostController::class); // index, create, store, show, edit, update, destroy
+    Route::resource('posts', PostController::class); 
 });
 
 Route::middleware(['web','auth'])->group(function () {
 
     Route::prefix('ateliers/{atelier}')->name('ateliers.')->group(function () {
-        Route::resource('photos', AtelierPhotoController::class); // index/create/store/show/edit/update/destroy
+        Route::resource('photos', AtelierPhotoController::class);
         Route::post('comments', [AtelierCommentController::class, 'store'])->name('comments.store');
         Route::delete('comments/{comment}', [AtelierCommentController::class, 'destroy'])->name('comments.destroy');
     });

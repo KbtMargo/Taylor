@@ -3,108 +3,128 @@
 @section('title', $atelier['name'].' | Ательє')
 
 @section('content')
-<div style="max-width:1100px; margin:0 auto; padding:20px;">
-    <a href="{{ route('page.atelier') }}" style="display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:#2563eb; margin-bottom:15px;">
+<div class="container py-4">
+    <a href="{{ route('page.atelier') }}" class="text-primary text-decoration-none mb-4 d-inline-block">
         ← Повернутися до списку
     </a>
 
-    <div style="display:flex; gap:20px; align-items:flex-start; background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:20px;">
-        <img src="{{ $atelier['image'] }}" alt="{{ $atelier['name'] }}" style="width:260px; height:260px; object-fit:cover; border-radius:10px;">
-        <div style="flex:1;">
-            <h1 style="margin:0 0 10px 0;">{{ $atelier['name'] }}</h1>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-4 align-items-start">
+                
+                <div class="col-md-4 col-lg-3">
+                    <img src="{{ $atelier['image'] }}" alt="{{ $atelier['name'] }}" class="img-fluid rounded" style="object-fit:cover; height:250px; width:100%;">
+                </div>
+                
+                <div class="col-md-8 col-lg-9">
+                    <h1 class="h3 mb-3">{{ $atelier['name'] }}</h1>
 
-            <div style="display:grid; grid-template-columns:160px 1fr; gap:6px 16px; margin-bottom:12px;">
-                <div><strong>Адреса:</strong></div>
-                <div>{{ $atelier['address'] }}</div>
+                    <dl class="row mb-4 border-bottom pb-3">
+                        <dt class="col-sm-3 fw-bold text-muted">Адреса:</dt>
+                        <dd class="col-sm-9">{{ $atelier['address'] }}</dd>
 
-                <div><strong>Email:</strong></div>
-                <div><a href="mailto:{{ $atelier['email'] }}">{{ $atelier['email'] }}</a></div>
+                        <dt class="col-sm-3 fw-bold text-muted">Email:</dt>
+                        <dd class="col-sm-9"><a href="mailto:{{ $atelier['email'] }}" class="text-primary">{{ $atelier['email'] }}</a></dd>
 
-                <div><strong>Телефон:</strong></div>
-                <div><a href="tel:{{ preg_replace('/\s+/', '', $atelier['phone']) }}">{{ $atelier['phone'] }}</a></div>
+                        <dt class="col-sm-3 fw-bold text-muted">Телефон:</dt>
+                        <dd class="col-sm-9"><a href="tel:{{ preg_replace('/\s+/', '', $atelier['phone']) }}" class="text-primary">{{ $atelier['phone'] }}</a></dd>
+                    </dl>
+
+                    @if(!empty($atelier['work_hours']))
+                        <div class="mb-3">
+                            <strong class="text-muted">Години роботи:</strong>
+                            <ul class="mt-1 ps-4 text-secondary">
+                                @foreach($atelier['work_hours'] as $day => $hours)
+                                    <li>{{ $day }} — {{ $hours }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    @if(!empty($atelier['tags']))
+                        <div class="mt-3">
+                            <strong class="text-muted">Теги:</strong>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                @foreach($atelier['tags'] as $key => $values)
+                                    @foreach($values as $value)
+                                        <span class="badge bg-primary rounded-pill shadow-sm">
+                                            {{ $value }}
+                                        </span>
+                                    @endforeach
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
             </div>
-
-            @if(!empty($atelier['work_hours']))
-                <div style="margin:10px 0 14px 0;">
-                    <strong>Години роботи:</strong>
-                    <ul style="margin:6px 0 0 0; padding-left:16px;">
-                        @foreach($atelier['work_hours'] as $day => $hours)
-                            <li>{{ $day }} — {{ $hours }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            @if(!empty($atelier['tags']))
-                <div style="margin:10px 0;">
-                    <strong>Теги:</strong>
-                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
-                        @foreach($atelier['tags'] as $key => $values)
-                            @foreach($values as $value)
-                                <span style="background:#007bff; color:#fff; padding:4px 10px; border-radius:16px; font-size:0.85rem;">
-                                    {{ $value }}
-                                </span>
-                            @endforeach
-                        @endforeach
-                    </div>
-                </div>
-            @endif
         </div>
     </div>
 
     @if(!empty($atelier['about']))
-        <div style="margin-top:20px; background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:20px;">
-            <h2 style="margin-top:0;">Про ательє</h2>
-            <p style="margin:0;">{{ $atelier['about'] }}</p>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h4 mb-3">Про ательє</h2>
+                <p class="text-secondary">{{ $atelier['about'] }}</p>
+            </div>
         </div>
     @endif
 
     @if(!empty($atelier['gallery']) || $atelier->photos()->published()->count() > 0)
-        <h2 class="text-xl font-semibold mb-3">Галерея</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        
+        <h2 class="h4 mb-3 mt-5">Галерея</h2>
+        <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
         @forelse($atelier->photos()->published()->orderBy('sort_order')->latest('id')->take(12)->get() as $p)
-            {{-- ВИПРАВЛЕНО: передано ID --}}
-            <a href="{{ route('ateliers.photos.edit', [$atelier['id'],$p]) }}" class="block">
-            <img src="{{ $p->image_path }}" alt="{{ $p->title }}" class="w-full h-40 object-cover rounded"/>
-            <div class="text-sm mt-1">{{ $p->title }}</div>
-            </a>
+            <div class="col">
+                <a href="{{ route('ateliers.photos.edit', [$atelier['id'],$p]) }}" class="d-block text-decoration-none">
+                    <img src="{{ $p->image_path }}" alt="{{ $p->title }}" class="img-fluid rounded" style="object-fit:cover; height:150px; width:100%;"/>
+                    <div class="text-muted small mt-1">{{ $p->title }}</div>
+                </a>
+            </div>
         @empty
-            <div class="col-span-full text-gray-500">Поки що немає фото</div>
+            <div class="col-12 text-muted text-center border p-3 rounded">Поки що немає фото</div>
         @endforelse
         </div>
         
-        {{-- ВИПРАВЛЕНО: передано ID --}}
-        <a class="btn btn-primary mt-4" href="{{ route('ateliers.photos.index', $atelier['id']) }}">Управління фото</a>
+        <a class="btn btn-secondary mt-2" href="{{ route('ateliers.photos.index', $atelier['id']) }}">Управління фото</a>
         
-        <h2 class="text-xl font-semibold mt-8 mb-3">Відгуки</h2>
+        <h2 class="h4 mt-5 mb-3">Відгуки</h2>
+        
         @auth
-        {{-- ВИПРАВЛЕНО: передано ID --}}
-        <form method="post" action="{{ route('ateliers.comments.store', $atelier['id']) }}" class="mb-4">
+        <form method="post" action="{{ route('ateliers.comments.store', $atelier['id']) }}" class="p-4 mb-4 border rounded bg-light">
           @csrf
-          <div class="flex items-center gap-3 mb-2">
-            <label>Оцінка:</label>
-            <select name="rating" class="input">
+          <div class="d-flex align-items-center mb-3">
+            <label class="form-label me-3 mb-0">Оцінка:</label>
+            <select name="rating" class="form-select form-select-sm" style="width: auto;">
               <option value="">—</option>
               @for($i=1;$i<=5;$i++) <option value="{{ $i }}">{{ $i }}</option> @endfor
             </select>
           </div>
-          <textarea name="body" rows="4" class="input w-full" placeholder="Ваш відгук..." required></textarea>
+          <div class="mb-3">
+              <textarea name="body" rows="4" class="form-control" placeholder="Ваш відгук..." required></textarea>
+          </div>
           <button class="btn btn-primary mt-2">Надіслати</button>
         </form>
         @endauth
 
+        <div class="divide-y border-top">
         @forelse($atelier->comments()->latest()->get() as $c)
-          <div class="border-t py-3">
-            <div class="text-sm text-gray-500">
-              {{ $c->user->name ?? 'Гість' }}
-              @if($c->rating) • ★ {{ $c->rating }} @endif
-              • {{ $c->created_at->diffForHumans() }}
+          <div class="py-3">
+            <div class="d-flex justify-content-between align-items-center small text-muted">
+              <span class="fw-bold text-dark">{{ $c->user->name ?? 'Гість' }}</span>
+              <div>
+                @if($c->rating) 
+                    <span class="text-warning fw-bold">★ {{ $c->rating }}</span> 
+                    <span class="text-secondary">•</span>
+                @endif
+                <span>{{ $c->created_at->diffForHumans() }}</span>
+              </div>
             </div>
-            <div>{{ $c->body }}</div>
+            <div class="text-dark mt-1">{{ $c->body }}</div>
           </div>
         @empty
-          <div class="text-gray-500">Ще немає відгуків</div>
+          <div class="text-muted py-4 border-top text-center">Ще немає відгуків</div>
         @endforelse
+        </div>
     @endif
 </div>
 @endsection
