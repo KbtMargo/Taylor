@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\AtelierController;
+use App\Http\Controllers\Atelier\PostController;
+
 
 Route::get('/', [PageController::class, 'index'])->name('home');
 Route::get('/page', [PageController::class, 'index'])->name('page.index');
@@ -17,10 +18,10 @@ Route::post('/page/result', [PageController::class, 'result'])->name('page.resul
 Route::get('/page/atelier', [AtelierController::class, 'index'])->name('page.atelier');
 Route::get('/page/atelier/{id}', [AtelierController::class, 'show'])->name('page.atelier.show');
 
-Route::get('/page/blog', [BlogController::class, 'index'])->name('blog.index');
-Route::get('/page/blog/category/{slug}', [BlogController::class, 'category'])->name('blog.category');
-Route::get('/page/blog/tag/{slug}', [BlogController::class, 'tag'])->name('blog.tag');
-Route::get('/page/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
+// Route::get('/page/blog', [BlogController::class, 'index'])->name('blog.index');
+// Route::get('/page/blog/category/{slug}', [BlogController::class, 'category'])->name('blog.category');
+// Route::get('/page/blog/tag/{slug}', [BlogController::class, 'tag'])->name('blog.tag');
+// Route::get('/page/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 Route::get('/page/dashboard', function () {
     return view('dashboard');
@@ -31,8 +32,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/page/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/page/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-Route::middleware('auth')->group(function(){
-    Route::post('/page/blog/{post}/comments', [BlogController::class, 'comment'])->name('blog.comment');
-});
+// Route::middleware('auth')->group(function(){
+//     Route::post('/page/blog/{post}/comments', [BlogController::class, 'comment'])->name('blog.comment');
+// });
 
+Route::middleware(['web','auth'])->prefix('atelier')->name('atelier.')->group(function () {
+    Route::resource('posts', PostController::class); // index, create, store, show, edit, update, destroy
+});
 require __DIR__.'/auth.php';
