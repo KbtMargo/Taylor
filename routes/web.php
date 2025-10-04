@@ -25,7 +25,9 @@ use App\Models\Atelier;
     Route::get('/page/atelier/{slug}', 'show')->name('atelier.show');
 });
 
-
+Route::prefix('ateliers/{atelier:slug}')->name('ateliers.')->group(function () {
+    Route::get('photos', [AtelierPhotoController::class, 'index'])->name('photos.index');
+});
 Route::get('/page/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
