@@ -544,6 +544,9 @@ class ComposerStaticInitc514d8f7b9fc5970bdd94287905ef584
 
     public static $classMap = array (
         'App\\Http\\Controllers\\AtelierController' => __DIR__ . '/../..' . '/app/Http/Controllers/AtelierController.php',
+        'App\\Http\\Controllers\\Atelier\\AtelierCommentController' => __DIR__ . '/../..' . '/app/Http/Controllers/Atelier/AtelierCommentController.php',
+        'App\\Http\\Controllers\\Atelier\\AtelierPhotoController' => __DIR__ . '/../..' . '/app/Http/Controllers/Atelier/AtelierPhotoController.php',
+        'App\\Http\\Controllers\\Atelier\\PostController' => __DIR__ . '/../..' . '/app/Http/Controllers/Atelier/PostController.php',
         'App\\Http\\Controllers\\Auth\\AuthenticatedSessionController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/AuthenticatedSessionController.php',
         'App\\Http\\Controllers\\Auth\\ConfirmablePasswordController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/ConfirmablePasswordController.php',
         'App\\Http\\Controllers\\Auth\\EmailVerificationNotificationController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/EmailVerificationNotificationController.php',
@@ -559,6 +562,10 @@ class ComposerStaticInitc514d8f7b9fc5970bdd94287905ef584
         'App\\Http\\Middleware\\QueryModeMiddleware' => __DIR__ . '/../..' . '/app/Http/Middleware/QueryModeMiddleware.php',
         'App\\Http\\Requests\\Auth\\LoginRequest' => __DIR__ . '/../..' . '/app/Http/Requests/Auth/LoginRequest.php',
         'App\\Http\\Requests\\ProfileUpdateRequest' => __DIR__ . '/../..' . '/app/Http/Requests/ProfileUpdateRequest.php',
+        'App\\Models\\Atelier' => __DIR__ . '/../..' . '/app/Models/Atelier.php',
+        'App\\Models\\Category' => __DIR__ . '/../..' . '/app/Models/Category.php',
+        'App\\Models\\Comment' => __DIR__ . '/../..' . '/app/Models/Comment.php',
+        'App\\Models\\Post' => __DIR__ . '/../..' . '/app/Models/Post.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'App\\View\\Components\\AppLayout' => __DIR__ . '/../..' . '/app/View/Components/AppLayout.php',

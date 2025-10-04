@@ -14,7 +14,7 @@
 @if(count($ateliers) > 0)
 <div style="display:flex; flex-direction:column; align-items:center; gap:20px;">
     @foreach($ateliers as $atelier)
-        <a href="{{ route('page.atelier.show', $atelier['id']) }}"
+        <a href="{{ route('page.atelier.show', $atelier['slug']) }}"
            style="display:block; width:1300px; text-decoration:none; color:inherit;">
             <div style="display:flex; align-items:flex-start; width:100%; background:#ffffff; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); padding:15px; transition:box-shadow .2s;">
                 <img src="{{ $atelier['image'] }}" alt="{{ $atelier['name'] }}" style="width:120px; height:120px; object-fit:cover; border-radius:8px; margin-right:15px;">

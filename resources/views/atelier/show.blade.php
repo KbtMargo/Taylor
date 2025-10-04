@@ -75,7 +75,7 @@
         <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
         @forelse($atelier->photos()->published()->orderBy('sort_order')->latest('id')->take(12)->get() as $p)
             <div class="col">
-                <a href="{{ route('ateliers.photos.edit', [$atelier['id'],$p]) }}" class="d-block text-decoration-none">
+                    <a href="{{ route('ateliers.photos.index', $atelier) }}">
                     <img src="{{ $p->image_path }}" alt="{{ $p->title }}" class="img-fluid rounded" style="object-fit:cover; height:150px; width:100%;"/>
                     <div class="text-muted small mt-1">{{ $p->title }}</div>
                 </a>
@@ -85,12 +85,12 @@
         @endforelse
         </div>
         
-        <a class="btn btn-secondary mt-2" href="{{ route('ateliers.photos.index', $atelier['id']) }}">Управління фото</a>
+        <a class="btn btn-secondary mt-2" href="{{ route('ateliers.photos.index', $atelier->slug) }}">Управління фото</a>
         
         <h2 class="h4 mt-5 mb-3">Відгуки</h2>
         
         @auth
-        <form method="post" action="{{ route('ateliers.comments.store', $atelier['id']) }}" class="p-4 mb-4 border rounded bg-light">
+        <form method="post" action="{{ route('ateliers.comments.store', $atelier->slug) }}" class="p-4 mb-4 border rounded bg-light">
           @csrf
           <div class="d-flex align-items-center mb-3">
             <label class="form-label me-3 mb-0">Оцінка:</label>

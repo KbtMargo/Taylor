@@ -7,6 +7,9 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'App\\Http\\Controllers\\AtelierController' => $baseDir . '/app/Http/Controllers/AtelierController.php',
+    'App\\Http\\Controllers\\Atelier\\AtelierCommentController' => $baseDir . '/app/Http/Controllers/Atelier/AtelierCommentController.php',
+    'App\\Http\\Controllers\\Atelier\\AtelierPhotoController' => $baseDir . '/app/Http/Controllers/Atelier/AtelierPhotoController.php',
+    'App\\Http\\Controllers\\Atelier\\PostController' => $baseDir . '/app/Http/Controllers/Atelier/PostController.php',
     'App\\Http\\Controllers\\Auth\\AuthenticatedSessionController' => $baseDir . '/app/Http/Controllers/Auth/AuthenticatedSessionController.php',
     'App\\Http\\Controllers\\Auth\\ConfirmablePasswordController' => $baseDir . '/app/Http/Controllers/Auth/ConfirmablePasswordController.php',
     'App\\Http\\Controllers\\Auth\\EmailVerificationNotificationController' => $baseDir . '/app/Http/Controllers/Auth/EmailVerificationNotificationController.php',
@@ -22,6 +25,10 @@ return array(
     'App\\Http\\Middleware\\QueryModeMiddleware' => $baseDir . '/app/Http/Middleware/QueryModeMiddleware.php',
     'App\\Http\\Requests\\Auth\\LoginRequest' => $baseDir . '/app/Http/Requests/Auth/LoginRequest.php',
     'App\\Http\\Requests\\ProfileUpdateRequest' => $baseDir . '/app/Http/Requests/ProfileUpdateRequest.php',
+    'App\\Models\\Atelier' => $baseDir . '/app/Models/Atelier.php',
+    'App\\Models\\Category' => $baseDir . '/app/Models/Category.php',
+    'App\\Models\\Comment' => $baseDir . '/app/Models/Comment.php',
+    'App\\Models\\Post' => $baseDir . '/app/Models/Post.php',
     'App\\Models\\User' => $baseDir . '/app/Models/User.php',
     'App\\Providers\\AppServiceProvider' => $baseDir . '/app/Providers/AppServiceProvider.php',
     'App\\View\\Components\\AppLayout' => $baseDir . '/app/View/Components/AppLayout.php',

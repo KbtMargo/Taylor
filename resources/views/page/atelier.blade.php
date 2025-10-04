@@ -3,31 +3,35 @@
 @section('title','Ательє | DressCode Website')
 
 @section('content')
-<h1 style="text-align:center; margin-bottom:30px;">Наші ательє</h1>
+<h1 class="text-3xl font-bold text-center mb-6">Наші ательє</h1>
 
-<form method="GET" action="{{ route('page.atelier') }}" style="display:flex; justify-content:center; align-items:center; margin-bottom:30px; gap:10px;">
+<form method="GET" action="{{ route('page.atelier') }}" class="flex justify-center items-center mb-6 gap-3">
     <input type="text" name="search" placeholder="Введіть назву ательє або тег..."
-           value="{{ $search ?? '' }}" style="padding:5px 10px; width:400px; flex-shrink:0;">
-    <button type="submit" style="padding:5px 15px; width:auto; flex-shrink:0; cursor:pointer;">Пошук</button>
+           value="{{ $search ?? '' }}" class="p-2 border border-gray-300 rounded w-96 flex-shrink-0">
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-150 cursor-pointer">
+        Пошук
+    </button>
 </form>
 
 @if(count($ateliers) > 0)
-<div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+<div class="flex flex-col items-center space-y-5">
     @foreach($ateliers as $atelier)
-        <a href="{{ route('page.atelier.show', $atelier['id']) }}"
-           style="display:block; width:1300px; text-decoration:none; color:inherit;">
-            <div style="display:flex; align-items:flex-start; width:100%; background:#ffffff; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); padding:15px; transition:box-shadow .2s;">
-                <img src="{{ $atelier['image'] }}" alt="{{ $atelier['name'] }}" style="width:120px; height:120px; object-fit:cover; border-radius:8px; margin-right:15px;">
-                <div style="flex:1;">
-                    <h2 style="margin:0 0 5px 0;">{{ $atelier['name'] }}</h2>
-                    <p style="margin:2px 0;"><strong>Адреса:</strong> {{ $atelier['address'] }}</p>
-                    <p style="margin:2px 0;"><strong>Email:</strong> {{ $atelier['email'] }}</p>
-                    <p style="margin:2px 0;"><strong>Телефон:</strong> {{ $atelier['phone'] }}</p>
-                    <p style="margin:5px 0 2px 0;"><strong>Теги:</strong></p>
-                    <div style="display:flex; flex-wrap:wrap; gap:5px;">
+        <a href="{{ route('page.atelier.show', $atelier['slug']) }}"
+               class="block w-[1300px] no-underline text-inherit hover:shadow-lg transition duration-200">         
+            <div class="flex items-start w-full bg-white rounded-xl shadow-md p-4">
+                <img src="{{ $atelier['image'] }}" alt="{{ $atelier['name'] }}" class="w-32 h-32 object-cover rounded-lg mr-4 flex-shrink-0">
+                
+                <div class="flex-1">
+                    <h2 class="text-xl font-semibold mb-1 text-blue-600">{{ $atelier['name'] }}</h2>
+                    <p class="text-sm my-1"><strong>Адреса:</strong> {{ $atelier['address'] }}</p>
+                    <p class="text-sm my-1"><strong>Email:</strong> {{ $atelier['email'] }}</p>
+                    <p class="text-sm my-1"><strong>Телефон:</strong> {{ $atelier['phone'] }}</p>
+                    <p class="text-sm mt-3 mb-1"><strong>Теги:</strong></p>
+                    
+                    <div class="flex flex-wrap gap-2">
                         @foreach($atelier['tags'] as $key => $values)
                             @foreach($values as $value)
-                                <span style="background:#007bff; color:#fff; padding:3px 8px; border-radius:5px; font-size:0.85rem;">
+                                <span class="bg-indigo-500 text-white px-2 py-1 rounded text-xs">
                                     {{ $value }}
                                 </span>
                             @endforeach
@@ -39,6 +43,6 @@
     @endforeach
 </div>
 @else
-<p style="text-align:center; font-size:1.2rem; margin-top:20px;">Ательє за вашим запитом не знайдено.</p>
+<p class="text-center text-xl text-gray-600 mt-8">Ательє за вашим запитом не знайдено.</p>
 @endif
 @endsection
