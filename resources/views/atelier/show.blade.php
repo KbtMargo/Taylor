@@ -59,16 +59,52 @@
         </div>
     @endif
 
-    @if(!empty($atelier['gallery']))
-        <div style="margin-top:20px; background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:20px;">
-            <h2 style="margin-top:0;">Галерея</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-top:10px;">
-                @foreach($atelier['gallery'] as $img)
-                    <img src="{{ $img }}" alt="gallery" style="width:100%; height:180px; object-fit:cover; border-radius:8px;">
-                @endforeach
-            </div>
+    @if(!empty($atelier['gallery']) || $atelier->photos()->published()->count() > 0)
+        <h2 class="text-xl font-semibold mb-3">Галерея</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        @forelse($atelier->photos()->published()->orderBy('sort_order')->latest('id')->take(12)->get() as $p)
+            {{-- ВИПРАВЛЕНО: передано ID --}}
+            <a href="{{ route('ateliers.photos.edit', [$atelier['id'],$p]) }}" class="block">
+            <img src="{{ $p->image_path }}" alt="{{ $p->title }}" class="w-full h-40 object-cover rounded"/>
+            <div class="text-sm mt-1">{{ $p->title }}</div>
+            </a>
+        @empty
+            <div class="col-span-full text-gray-500">Поки що немає фото</div>
+        @endforelse
         </div>
+        
+        {{-- ВИПРАВЛЕНО: передано ID --}}
+        <a class="btn btn-primary mt-4" href="{{ route('ateliers.photos.index', $atelier['id']) }}">Управління фото</a>
+        
+        <h2 class="text-xl font-semibold mt-8 mb-3">Відгуки</h2>
+        @auth
+        {{-- ВИПРАВЛЕНО: передано ID --}}
+        <form method="post" action="{{ route('ateliers.comments.store', $atelier['id']) }}" class="mb-4">
+          @csrf
+          <div class="flex items-center gap-3 mb-2">
+            <label>Оцінка:</label>
+            <select name="rating" class="input">
+              <option value="">—</option>
+              @for($i=1;$i<=5;$i++) <option value="{{ $i }}">{{ $i }}</option> @endfor
+            </select>
+          </div>
+          <textarea name="body" rows="4" class="input w-full" placeholder="Ваш відгук..." required></textarea>
+          <button class="btn btn-primary mt-2">Надіслати</button>
+        </form>
+        @endauth
+
+        @forelse($atelier->comments()->latest()->get() as $c)
+          <div class="border-t py-3">
+            <div class="text-sm text-gray-500">
+              {{ $c->user->name ?? 'Гість' }}
+              @if($c->rating) • ★ {{ $c->rating }} @endif
+              • {{ $c->created_at->diffForHumans() }}
+            </div>
+            <div>{{ $c->body }}</div>
+          </div>
+        @empty
+          <div class="text-gray-500">Ще немає відгуків</div>
+        @endforelse
     @endif
 </div>
 @endsection
- 
