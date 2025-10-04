@@ -10,6 +10,20 @@ $realAtelier = $slug ? \App\Models\Atelier::where('slug', $slug)->first() : null
 
 $get = fn($key, $fallback='') => is_array($atelier) ? ($atelier[$key] ?? $fallback) : ($atelier->{$key} ?? $fallback);
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
+$photos = collect();
+
+if ($realAtelier) {
+    $photos = DB::table('atelier_photos')
+        ->where('atelier_id', $realAtelier->id)
+        ->where('is_published', 1) 
+        ->orderByRaw('sort_order IS NULL, sort_order ASC') 
+        ->orderByDesc('id')
+        ->limit(12)
+        ->get();
+}
 @endphp
 
 <div class="container py-4">
@@ -45,7 +59,6 @@ $get = fn($key, $fallback='') => is_array($atelier) ? ($atelier[$key] ?? $fallba
 
             <div class="col-md-8 col-lg-9">
                 <h1 class="h3 mb-3">{{ $get('name','Ательє') }}</h1>
-
                 <dl class="row mb-4 border-bottom pb-3">
                     <dt class="col-sm-3 fw-bold text-muted">Адреса:</dt>
                     <dd class="col-sm-9">{{ $get('address','Не вказано') }}</dd>
@@ -112,52 +125,39 @@ $get = fn($key, $fallback='') => is_array($atelier) ? ($atelier[$key] ?? $fallba
     </div>
 @endif
 
-@php
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-
-$photos = collect();
-
-if ($realAtelier) {
-    $photos = DB::table('atelier_photos')
-        ->where('atelier_id', $realAtelier->id)
-        ->where('is_published', 1)                      
-        ->orderByRaw('sort_order IS NULL, sort_order ASC')
-        ->orderByDesc('id')
-        ->limit(12)
-        ->get();
-}
-@endphp
-    
-<h2 class="h4 mb-3 mt-5">Галерея</h2>
-
-<div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
-  @forelse($photos as $p)
-    <div class="col">
-      <div class="card h-100 shadow-sm">
-        <img src="{{ Storage::url($p->image_path) }}"
-             alt="{{ $p->title ?? '' }}"
-             class="card-img-top"
-             style="object-fit:cover; height:150px;">
-        <div class="card-body p-2">
-          <div class="small text-muted">{{ $p->title ?? '—' }}</div>
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h4 mb-3">Галерея</h2>
+        
+        <div class="row row-cols-2 row-cols-md-4 g-3 mb-2">
+          @forelse($photos as $p)
+            <div class="col">
+              <div class="card h-100 border">
+                <img src="{{ Storage::url($p->image_path) }}"
+                     alt="{{ $p->title ?? '' }}"
+                     class="card-img-top"
+                     style="object-fit:cover; height:150px;">
+                <div class="card-body p-2">
+                  <div class="small text-muted text-center">{{ $p->title ?? '—' }}</div>
+                </div>
+              </div>
+            </div>
+          @empty
+            <div class="col-12 text-muted text-center p-3 rounded">
+              Поки що немає фото
+            </div>
+          @endforelse
         </div>
-      </div>
+        
+        @can('create', App\Models\AtelierPhoto::class) 
+            <a class="btn btn-secondary mt-2"
+            href="{{ route('ateliers.photos.index', ['atelier' => $slug]) }}">
+                Управління фото
+            </a>
+        @endcan
+
     </div>
-  @empty
-    <div class="col-12 text-muted text-center border p-3 rounded">
-      Поки що немає фото
-    </div>
-  @endforelse
 </div>
-
-@auth
-<a class="btn btn-secondary mt-2"
-   href="{{ route('ateliers.photos.index', ['atelier' => $slug]) }}">
-    Управління фото
-</a>
-@endauth
-
 <h2 class="h4 mt-5 mb-3">Відгуки</h2>
 
 @auth
