@@ -9,14 +9,12 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration {
     public function up(): void
     {
-        // 1) додамо колонку, якщо її ще немає
         if (!Schema::hasColumn('ateliers', 'slug')) {
             Schema::table('ateliers', function (Blueprint $table) {
                 $table->string('slug')->nullable()->unique()->after('name');
             });
         }
 
-        // 2) бекап-філл існуючих записів
         DB::table('ateliers')
             ->select(['id','name','slug'])
             ->orderBy('id')
@@ -27,7 +25,6 @@ return new class extends Migration {
                     $base = Str::slug($row->name ?? 'atelier-'.$row->id);
                     $slug = $base;
 
-                    // уникаємо колізій
                     $suffix = 1;
                     while (DB::table('ateliers')->where('slug', $slug)->exists()) {
                         $slug = $base.'-'.$suffix++;
@@ -37,12 +34,10 @@ return new class extends Migration {
                 }
             });
 
-        // залишимо nullable (не обов'язково змінювати на NOT NULL, щоб не тягнути doctrine/dbal)
     }
 
     public function down(): void
     {
-        // обережно: видаляти колонку можна, якщо потрібно
         if (Schema::hasColumn('ateliers', 'slug')) {
             Schema::table('ateliers', function (Blueprint $table) {
                 $table->dropUnique(['slug']);
