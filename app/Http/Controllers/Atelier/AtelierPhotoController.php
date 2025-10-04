@@ -9,8 +9,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class AtelierPhotoController extends Controller
+
+class AtelierPhotoController extends Controller 
 {
+     public function __construct()
+    {
+        $this->authorizeResource(AtelierPhoto::class, 'photo');
+    }
+
     public function index(Atelier $atelier)
     {
         $photos = $atelier->photos()
