@@ -34,6 +34,7 @@ class AtelierPhotoController extends Controller
             'status'       => ['nullable', 'in:draft,published'],
             'published_at' => ['nullable', 'date'],
             'image'        => ['required', 'image', 'max:8192'],
+            'is_published' => ['nullable','boolean'],
         ]);
 
         $slugBase = $data['title'] ?? pathinfo($r->file('image')->getClientOriginalName(), PATHINFO_FILENAME);
@@ -48,6 +49,7 @@ class AtelierPhotoController extends Controller
             'description'  => $data['description'] ?? null,
             'status'       => $data['status'] ?? 'draft',
             'published_at' => $data['published_at'] ?? null,
+            'is_published' => isset($data['is_published']) ? (int) (bool) $data['is_published'] : 1,
             'sort_order'   => 0,
         ]);
 
