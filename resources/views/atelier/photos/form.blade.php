@@ -1,24 +1,19 @@
 @extends('layouts.app')
 
-{{-- Визначаємо заголовок залежно від того, чи існує фото --}}
 @section('title', ($photo->exists ? 'Редагувати' : 'Додати').' фото — '.$atelier->name)
 
 @section('content')
 <div class="container py-4">
-    {{-- Посилання назад --}}
     <a href="{{ route('ateliers.photos.index', $atelier) }}" class="text-primary text-decoration-none mb-3 d-inline-block">
         ← До списку фото
     </a>
 
-    {{-- Єдиний заголовок --}}
     <h1 class="h4 mb-3">{{ $photo->exists ? 'Редагувати' : 'Додати' }} фото: {{ $atelier->name }}</h1>
 
-    {{-- Повідомлення про успіх --}}
     @if(session('ok')) 
         <div class="alert alert-success">{{ session('ok') }}</div> 
     @endif
 
-    {{-- Блок помилок валідації --}}
     @if ($errors->any())
         <div class="alert alert-danger">
             <div class="fw-bold">Помилки у формі:</div>
@@ -30,11 +25,6 @@
         </div>
     @endif
 
-    {{-- 
-        ФОРМА РЕДАГУВАННЯ/СТВОРЕННЯ
-        1. action: Використовує UPDATE, якщо фото існує, і STORE, якщо ні.
-        2. @method('PUT'): Додається тільки для режиму редагування.
-    --}}
     <form method="post" enctype="multipart/form-data" class="card p-4"
           action="{{ $photo->exists 
               ? route('ateliers.photos.update', [$atelier, $photo]) 
@@ -45,10 +35,8 @@
             @method('PUT') 
         @endif
 
-        {{-- Поле Зображення --}}
         <div class="mb-3">
             <label class="form-label">Зображення (залиште порожнім, щоб не змінювати)</label>
-            {{-- `required` вимкнено для режиму редагування --}}
             <input type="file" name="image" class="form-control @error('image') is-invalid @enderror" {{ $photo->exists ? '' : 'required' }}>
             
             @if($photo->image_path)
@@ -60,7 +48,6 @@
             @enderror
         </div>
 
-        {{-- Поле Заголовок: Заповнюється існуючим значенням (`$photo->title`) --}}
         <div class="mb-3">
             <label class="form-label">Заголовок</label>
             <input name="title" value="{{ old('title', $photo->title) }}" class="form-control @error('title') is-invalid @enderror">
@@ -69,7 +56,6 @@
             @enderror
         </div>
 
-        {{-- Поле Опис: Заповнюється існуючим значенням (`$photo->description`) --}}
         <div class="mb-3">
             <label class="form-label">Опис</label>
             <textarea name="description" rows="4" class="form-control @error('description') is-invalid @enderror">{{ old('description', $photo->description) }}</textarea>
@@ -78,7 +64,6 @@
             @enderror
         </div>
 
-        {{-- Група полів (Статус, Дата, Порядок): Заповнюються існуючими значеннями --}}
         <div class="row g-3">
             <div class="col-sm-4">
                 <label class="form-label">Статус</label>
@@ -102,12 +87,10 @@
             </div>
         </div>
 
-        {{-- Кнопки дій --}}
         <div class="mt-4 d-flex gap-2">
             <button class="btn btn-primary">Зберегти</button>
             <a class="btn btn-outline-secondary" href="{{ route('ateliers.photos.index', $atelier) }}">До списку</a>
 
-            {{-- Кнопка Видалити (тільки в режимі редагування) --}}
             @if($photo->exists)
                 <button type="button" class="btn btn-danger" 
                         onclick="document.getElementById('delete-photo-form').submit();">
@@ -117,7 +100,6 @@
         </div>
     </form>
     
-    {{-- Окрема форма для видалення (прихована) --}}
     @if($photo->exists)
         <form id="delete-photo-form" method="post" 
               action="{{ route('ateliers.photos.destroy', [$atelier, $photo]) }}"

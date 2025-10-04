@@ -12,10 +12,9 @@ class PageController extends Controller
         return view('page.index');
     }
     public function about()   { return view('page.about'); }
-    /////
 
     public function faq()     { return view('page.faq'); }
-public function profile()
+    public function profile()
     {
         return view('page.profile');
     }
@@ -84,24 +83,20 @@ public function profile()
     {
         return view('page.select');
     }
- //////////////
 
     public function result(Request $request)
     {
         $ateliers = $this->getAteliers();
 
-        // Отримуємо тільки ті поля, що мають значення
         $criteria = array_filter($request->only([
             'місто', 'вид роботи', 'термін виготовлення', 'категорія виробу', 'для кого', 'асортимент'
         ]));
 
         $filtered = array_filter($ateliers, function ($atelier) use ($criteria) {
             foreach ($criteria as $key => $value) {
-                // Якщо ательє не має цього тегу або значення не входить в масив тегів, пропускаємо
                 if (!isset($atelier['tags'][$key])) {
                     return false;
                 }
-                // частковий збіг: перевіряємо, чи є хоча б один збіг
                 if (!in_array($value, $atelier['tags'][$key])) {
                     return false;
                 }

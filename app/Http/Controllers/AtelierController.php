@@ -299,9 +299,4 @@ class AtelierController extends Controller
         return view('atelier.show', ['atelier' => $atelierMock]);
     }
 
-    public function show2(string $slug)
-{
-    $atelier = Atelier::where('slug', $slug)->firstOrFail();
-    return view('page.atelier', compact('atelier'));
-}
 }

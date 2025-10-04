@@ -25,7 +25,6 @@ class ProfileController extends Controller
 
     public function destroy(Request $request)
     {
-        // за потреби: видалення акаунта
         $request->user()->delete();
         auth()->logout();
         return redirect('/')->with('status','profile-deleted');

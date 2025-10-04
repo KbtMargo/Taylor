@@ -26,7 +26,6 @@ class AtelierCommentController extends Controller
 
     public function destroy(Atelier $atelier, Comment $comment)
     {
-        // TODO: policy/перевірка, що це автор або адмін
         $comment->delete();
         return back()->with('ok','Відгук видалено');
     }

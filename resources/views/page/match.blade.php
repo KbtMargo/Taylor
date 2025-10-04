@@ -5,7 +5,6 @@
 @section('content')
 <div class="home-page-container" style="display: flex; flex-wrap: wrap; align-items: stretch; gap: 2rem; min-height: 70vh;">
 
-    <!-- Ліва частина: текст і кнопки -->
     <div class="home-text" style="flex: 1; min-width: 300px; max-width: 600px; display: flex; flex-direction: column; justify-content: center;">
         <h1>Знайди ательє, що втілить твої <span style="color: #1b3db7;"> унікальні ідеї</span></h1>
 
@@ -27,7 +26,6 @@
         </div>
     </div>
 
-    <!-- Права частина: зображення ательє -->
     <div class="home-image" style="flex: 1; min-width: 300px; border-radius: 8px; overflow: hidden;">
         <img src="{{ asset('images/Atelier Colage.png') }}" alt="Ательє" style="width: 100%; height: 100%; object-fit: cover; min-height: 300px;">
     </div>

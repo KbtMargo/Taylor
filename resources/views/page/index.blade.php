@@ -11,7 +11,6 @@
     <a href="{{ route('page.catalog') }}" class="btn-outline">Переглянути матеріали</a>
 
     <style>
-/* Перша кнопка: прозора */
         .btn-outline {
             display: inline-block;
             padding: 10px 20px;
@@ -30,7 +29,6 @@
             color: white;
         }
 
-        /* Друга кнопка: залита */
         .btn-filled {
             display: inline-block;
             padding: 10px 20px;

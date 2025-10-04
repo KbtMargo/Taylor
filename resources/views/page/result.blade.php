@@ -10,10 +10,8 @@
         @foreach($ateliers as $atelier)
             <div style="display: flex; align-items: flex-start; width: 1300px; background: #ffffff; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 15px;">
 
-                <!-- Фото ательє -->
                 <img src="{{ $atelier['image'] }}" alt="{{ $atelier['name'] }}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
 
-                <!-- Інформація ательє -->
                 <div style="flex: 1;">
                     <h2 style="margin: 0 0 5px 0;">{{ $atelier['name'] }}</h2>
 
