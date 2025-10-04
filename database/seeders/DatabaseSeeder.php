@@ -3,10 +3,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Category;
-use App\Models\Post;
-use App\Models\Tag;
-use App\Models\Comment;
+
 
 class DatabaseSeeder extends Seeder
 {

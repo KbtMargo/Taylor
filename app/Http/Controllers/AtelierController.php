@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class AtelierController extends Controller
 {
@@ -238,6 +239,56 @@ class AtelierController extends Controller
         $atelier = collect($ateliers)->firstWhere('id', (int)$id);
         abort_unless($atelier, 404);
 
-        return view('atelier.show', compact('atelier'));
+        // Створення об'єкта-заглушки для підтримки $atelier['key'] та $atelier->photos()
+        $atelierMock = new class($atelier) implements \ArrayAccess {
+            private $data;
+
+            public function __construct(array $data) {
+                $this->data = $data;
+            }
+
+            // --- Методи для підтримки синтаксису масиву ($atelier['key']) ---
+            public function offsetSet(mixed $offset, mixed $value): void {}
+            public function offsetExists(mixed $offset): bool { return isset($this->data[$offset]); }
+            public function offsetUnset(mixed $offset): void {}
+            public function offsetGet(mixed $offset): mixed {
+                return $this->data[$offset] ?? null;
+            }
+            
+            // --- Магічний метод для підтримки об'єктного доступу ($atelier->gallery) ---
+            public function __get($name) {
+                return $this->data[$name] ?? null;
+            }
+
+            // --- Заглушка для photos() ---
+            public function photos(): object {
+                // Імітує ланцюжок викликів Eloquent і повертає порожню колекцію
+                return (object) new class {
+                    public function published(): object {
+                        return (object) new class {
+                            public function orderBy(): object { return $this; }
+                            public function latest(): object { return $this; }
+                            public function take(): object { return $this; }
+                            public function get(): Collection {
+                                return collect(); // Порожня колекція
+                            }
+                        };
+                    }
+                };
+            }
+            
+            // --- Заглушка для comments() ---
+            public function comments(): object {
+                // Імітує ланцюжок викликів Eloquent і повертає порожню колекцію
+                return (object) new class {
+                    public function latest(): object { return $this; }
+                    public function get(): Collection {
+                        return collect(); // Порожня колекція
+                    }
+                };
+            }
+        };
+
+        return view('atelier.show', ['atelier' => $atelierMock]);
     }
 }
