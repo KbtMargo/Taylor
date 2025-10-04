@@ -4,15 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use App\Models\Atelier;
 
 class AtelierController extends Controller
 {
-    private function data(): array
+    public function data(): array
     {
         return [
             [
                 'id' => 1,
                 'name' => 'Ательє "Елегант"',
+                'slug' => 'atele-elegant', 
                 'image' => '/images/atelier1.jpeg',
                 'city' => 'Київ',
                 'address' => 'вул. Хрещатик, 10',
@@ -40,6 +42,7 @@ class AtelierController extends Controller
             [
                 'id' => 2,
                 'name' => 'Ательє "Шик & Стиль"',
+                'slug' => 'atele-shik-styl',
                 'image' => '/images/atelier2.jpg',
                 'city' => 'Львів',
                 'address' => 'просп. Свободи, 25',
@@ -66,6 +69,7 @@ class AtelierController extends Controller
             [
                 'id' => 3,
                 'name' => 'Ательє "Модні аксесуари"',
+                'slug' => 'atele-modni-aksesuary',
                 'image' => '/images/atelier3.jpeg',
                 'city' => 'Одеса',
                 'address' => 'вул. Дерибасівська, 15',
@@ -92,6 +96,7 @@ class AtelierController extends Controller
             [
                 'id' => 4,
                 'name' => 'Ательє "СпортСтиль"',
+                'slug' => 'atele-sportstyl',
                 'image' => '/images/atelier4.jpg',
                 'city' => 'Київ',
                 'address' => 'вул. Січових Стрільців, 12',
@@ -116,6 +121,7 @@ class AtelierController extends Controller
             [
                 'id' => 5,
                 'name' => 'Ательє "Класика"',
+                'slug' => 'atele-klasyka',
                 'image' => '/images/atelier5.jpg',
                 'city' => 'Хмельницький',
                 'address' => 'вул. Листопадового Чину, 7',
@@ -140,6 +146,7 @@ class AtelierController extends Controller
             [
                 'id' => 6,
                 'name' => 'Ательє "Дитячий Світ"',
+                'slug' => 'atele-dytyachiy-svit',
                 'image' => '/images/atelier6.jpg',
                 'city' => 'Миколаїв',
                 'address' => 'вул. Катерининська, 22',
@@ -164,6 +171,7 @@ class AtelierController extends Controller
             [
                 'id' => 7,
                 'name' => 'Ательє "DressCode"',
+                'slug' => 'atele-dresscode',
                 'image' => '/images/atelier7.jpeg',
                 'city' => 'Хмельницький',
                 'address' => 'вул. Зарічанська, 22',
@@ -188,6 +196,7 @@ class AtelierController extends Controller
             [
                 'id' => 8,
                 'name' => 'Ательє "Шовк та Фенхель"',
+                'slug' => 'atele-shovk-ta-fenhel',
                 'image' => '/images/atelier8.jpg',
                 'city' => 'Хмельницький',
                 'address' => 'вул. Петлюри, 7',
@@ -233,21 +242,21 @@ class AtelierController extends Controller
         return view('atelier.index', compact('ateliers', 'search'));
     }
 
-    public function show($id)
+    public function show($slug)
     {
         $ateliers = $this->data();
-        $atelier = collect($ateliers)->firstWhere('id', (int)$id);
+        $atelier = collect($ateliers)->firstWhere('slug', (string)$slug); 
         abort_unless($atelier, 404);
 
-        // Створення об'єкта-заглушки для підтримки $atelier['key'] та $atelier->photos()
-        $atelierMock = new class($atelier) implements \ArrayAccess {
-            private $data;
+        $atelierMock = new class($atelier, $slug) implements \ArrayAccess {    
+            public $data;
+            public $currentSlug;
 
-            public function __construct(array $data) {
+            public function __construct(array $data, string $slug) {
                 $this->data = $data;
+                $this->currentSlug = $slug; 
             }
 
-            // --- Методи для підтримки синтаксису масиву ($atelier['key']) ---
             public function offsetSet(mixed $offset, mixed $value): void {}
             public function offsetExists(mixed $offset): bool { return isset($this->data[$offset]); }
             public function offsetUnset(mixed $offset): void {}
@@ -255,14 +264,14 @@ class AtelierController extends Controller
                 return $this->data[$offset] ?? null;
             }
             
-            // --- Магічний метод для підтримки об'єктного доступу ($atelier->gallery) ---
             public function __get($name) {
+                if ($name === 'slug') {
+                    return $this->currentSlug;
+                }
                 return $this->data[$name] ?? null;
             }
 
-            // --- Заглушка для photos() ---
             public function photos(): object {
-                // Імітує ланцюжок викликів Eloquent і повертає порожню колекцію
                 return (object) new class {
                     public function published(): object {
                         return (object) new class {
@@ -270,20 +279,18 @@ class AtelierController extends Controller
                             public function latest(): object { return $this; }
                             public function take(): object { return $this; }
                             public function get(): Collection {
-                                return collect(); // Порожня колекція
+                                return collect();
                             }
                         };
                     }
                 };
             }
             
-            // --- Заглушка для comments() ---
             public function comments(): object {
-                // Імітує ланцюжок викликів Eloquent і повертає порожню колекцію
                 return (object) new class {
                     public function latest(): object { return $this; }
                     public function get(): Collection {
-                        return collect(); // Порожня колекція
+                        return collect();
                     }
                 };
             }
@@ -291,4 +298,10 @@ class AtelierController extends Controller
 
         return view('atelier.show', ['atelier' => $atelierMock]);
     }
+
+    public function show2(string $slug)
+{
+    $atelier = Atelier::where('slug', $slug)->firstOrFail();
+    return view('page.atelier', compact('atelier'));
+}
 }

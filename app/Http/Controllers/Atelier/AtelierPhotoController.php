@@ -1,87 +1,104 @@
 <?php
+
 namespace App\Http\Controllers\Atelier;
 
 use App\Http\Controllers\Controller;
 use App\Models\Atelier;
 use App\Models\AtelierPhoto;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AtelierPhotoController extends Controller
 {
     public function index(Atelier $atelier)
     {
-        $photos = $atelier->photos()->orderBy('sort_order')->latest('id')->paginate(12);
-        return view('atelier.photos.index', compact('atelier','photos'));
+        $photos = $atelier->photos()
+            ->orderBy('sort_order')
+            ->latest('id')
+            ->paginate(12);
+
+        return view('atelier.photos.index', compact('atelier', 'photos'));
     }
 
     public function create(Atelier $atelier)
     {
-        return view('atelier.photos.form', ['atelier'=>$atelier, 'photo'=>new AtelierPhoto()]);
+        return view('atelier.photos.form', ['atelier' => $atelier, 'photo' => new AtelierPhoto()]);
     }
 
     public function store(Request $r, Atelier $atelier)
     {
         $data = $r->validate([
-            'title' => ['nullable','string','max:255'],
-            'description' => ['nullable','string'],
-            'status' => ['nullable','in:draft,published'],
-            'published_at' => ['nullable','date'],
-            'image' => ['required','image','max:8192'], // 8MB
+            'title'        => ['nullable', 'string', 'max:255'],
+            'description'  => ['nullable', 'string'],
+            'status'       => ['nullable', 'in:draft,published'],
+            'published_at' => ['nullable', 'date'],
+            'image'        => ['required', 'image', 'max:8192'],
+            'is_published' => ['nullable','boolean'],
         ]);
-        $slugSource = $data['title'] ?? pathinfo($r->file('image')->getClientOriginalName(), PATHINFO_FILENAME);
-        $slug = Str::slug($slugSource).'-'.Str::random(6);
 
-        $path = $r->file('image')->store("public/ateliers/{$atelier->id}");
+        $slugBase = $data['title'] ?? pathinfo($r->file('image')->getClientOriginalName(), PATHINFO_FILENAME);
+        $slug = Str::slug($slugBase) . '-' . Str::random(6);
+
+        $path = $r->file('image')->store('ateliers/' . $atelier->id, 'public');
+
         $photo = $atelier->photos()->create([
             'title'        => $data['title'] ?? null,
             'slug'         => $slug,
-            'image_path'   => Storage::url($path), // /storage/ateliers/{id}/...
+            'image_path'   => $path, 
             'description'  => $data['description'] ?? null,
             'status'       => $data['status'] ?? 'draft',
             'published_at' => $data['published_at'] ?? null,
+            'is_published' => isset($data['is_published']) ? (int) (bool) $data['is_published'] : 1,
             'sort_order'   => 0,
         ]);
 
-        return redirect()->route('ateliers.photos.edit', [$atelier, $photo])->with('ok','Фото додано');
-    }
-
-    public function show(Atelier $atelier, AtelierPhoto $photo)
-    {   // опціонально показ детально
-        return view('atelier.photos.show', compact('atelier','photo'));
+        return redirect()->route('ateliers.photos.edit', [$atelier, $photo])->with('ok', 'Фото додано');
     }
 
     public function edit(Atelier $atelier, AtelierPhoto $photo)
     {
-        return view('atelier.photos.form', compact('atelier','photo'));
+        abort_unless($photo->atelier_id === $atelier->id, 404);
+
+        return view('atelier.photos.form', compact('atelier', 'photo'));
     }
 
     public function update(Request $r, Atelier $atelier, AtelierPhoto $photo)
     {
+        abort_unless($photo->atelier_id === $atelier->id, 404);
+
         $data = $r->validate([
-            'title' => ['nullable','string','max:255'],
-            'description' => ['nullable','string'],
-            'status' => ['nullable','in:draft,published'],
-            'published_at' => ['nullable','date'],
-            'sort_order' => ['nullable','integer','min:0','max:100000'],
-            'image' => ['nullable','image','max:8192'],
+            'title'        => ['nullable', 'string', 'max:255'],
+            'description'  => ['nullable', 'string'],
+            'status'       => ['nullable', 'in:draft,published'],
+            'published_at' => ['nullable', 'date'],
+            'sort_order'   => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'image'        => ['nullable', 'image', 'max:8192'],
         ]);
 
         if ($r->hasFile('image')) {
-            // опційно: видалити старий файл
-            // if ($photo->image_path && str_starts_with($photo->image_path, '/storage/')) { ... }
-            $path = $r->file('image')->store("public/ateliers/{$atelier->id}");
-            $data['image_path'] = Storage::url($path);
+            if ($photo->image_path) {
+                Storage::disk('public')->delete($photo->image_path);
+            }
+            
+            $path = $r->file('image')->store('ateliers/' . $atelier->id, 'public');
+            $data['image_path'] = $path; 
         }
+
         $photo->update($data);
 
-        return back()->with('ok','Збережено');
+        return back()->with('ok', 'Збережено');
     }
 
     public function destroy(Atelier $atelier, AtelierPhoto $photo)
     {
+        abort_unless($photo->atelier_id === $atelier->id, 404);
+
+        if ($photo->image_path) {
+            Storage::disk('public')->delete($photo->image_path);
+        }
+
         $photo->delete();
-        return redirect()->route('ateliers.photos.index', $atelier)->with('ok','Видалено');
+        return redirect()->route('ateliers.photos.index', $atelier)->with('ok', 'Видалено');
     }
 }

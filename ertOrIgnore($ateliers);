@@ -1,0 +1,35 @@
+[90m= [39m[
+    [
+      "[34mslug[39m" => "[32matele-elegant[39m",
+      "[34mname[39m" => "[32mАтельє "Елегант"[39m",
+    ],
+    [
+      "[34mslug[39m" => "[32matele-shik-styl[39m",
+      "[34mname[39m" => "[32mАтельє "Шик & Стиль"[39m",
+    ],
+    [
+      "[34mslug[39m" => "[32matele-modni-aksesuary[39m",
+      "[34mname[39m" => "[32mАтельє "Модні аксесуари"[39m",
+    ],
+    [
+      "[34mslug[39m" => "[32matele-sportstyl[39m",
+      "[34mname[39m" => "[32mАтельє "СпортСтиль"[39m",
+    ],
+    [
+      "[34mslug[39m" => "[32matele-klasyka[39m",
+      "[34mname[39m" => "[32mАтельє "Класика"[39m",
+    ],
+    [
+      "[34mslug[39m" => "[32matele-dytyachiy-svit[39m",
+      "[34mname[39m" => "[32mАтельє "Дитячий Світ"[39m",
+    ],
+    [
+      "[34mslug[39m" => "[32matele-dresscode[39m",
+      "[34mname[39m" => "[32mАтельє "DressCode"[39m",
+    ],
+    [
+      "[34mslug[39m" => "[32matele-shovk-ta-fenhel[39m",
+      "[34mname[39m" => "[32mАтельє "Шовк та Фенхель"[39m",
+    ],
+  ]
+
