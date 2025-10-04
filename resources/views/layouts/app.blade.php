@@ -36,7 +36,7 @@
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('page.atelier') ? 'active' : '' }}" href="{{ route('page.atelier') }}">Ательє</a></li>
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('page.catalog') ? 'active' : '' }}" href="{{ route(name: 'page.catalog') }}">Каталог матеріалів</a></li>
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('page.about') ? 'active' : '' }}" href="{{ route('page.about') }}">Про нас</a></li>
-            <li class="nav-item"><a class="nav-link {{ request()->routeIs('page.faq') ? 'active' : '' }}" href="{{ route(name: 'page.faq') }}">Контакти</a></li>
+            <li class="nav-item"><a class="nav-link {{ request()->routeIs('page.faq') ? 'active' : '' }}" href="{{ route(name: 'page.faq') }}">FAQ</a></li>
           </ul>
 
           <ul class="navbar-nav d-flex">

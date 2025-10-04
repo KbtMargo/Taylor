@@ -33,6 +33,6 @@ class Atelier extends Model
     }
 
     public function photos(){ return $this->hasMany(\App\Models\AtelierPhoto::class); }
-    public function comments(){ return $this->morphMany(\App\Models\Comment::class, 'commentable'); }
+    public function comments() { return $this->morphMany(Comment::class, 'commentable'); }
     public function categories(){ return $this->belongsToMany(\App\Models\Category::class, 'atelier_category'); }
 }
