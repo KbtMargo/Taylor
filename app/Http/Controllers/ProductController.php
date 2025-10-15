@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
-   public function index()
-{
-    $products = Product::all();
-    return view('products.index', compact('products'));
+    /**
+     * Display the specified resource.
+     */
+    public function show(Product $product)
+    {
+        return view('product.show', compact('product'));
+    }
 }
 
-public function show($id)
-{
-    $product = Product::findOrFail($id);
-    return view('products.show', compact('product'));
-}
-}

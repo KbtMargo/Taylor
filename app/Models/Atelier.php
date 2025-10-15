@@ -1,38 +1,58 @@
 <?php
-namespace App\Models; 
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Atelier extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name','slug','phone','address','description'];
+    protected $fillable = [
+        'name',
+        'slug',
+        'image',
+        'city',
+        'address',
+        'email',
+        'phone',
+        'tags',
+    ];
 
-    public function getRouteKeyName(): string { return 'slug'; }
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'tags' => 'array',
+    ];
+
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
 
     protected static function booted()
     {
-        static::creating(function ($atelier) {
+        static::creating(function (Atelier $atelier) {
             if (empty($atelier->slug)) {
-                $atelier->slug = static::makeUniqueSlug($atelier->name);
+                $atelier->slug = static::createUniqueSlug($atelier->name);
             }
         });
     }
 
-    protected static function makeUniqueSlug(string $name): string
+    protected static function createUniqueSlug(string $name): string
     {
-        $base = Str::slug($name ?: 'atelier');
-        $slug = $base;
-        $suffix = 1;
-        while (static::query()->where('slug', $slug)->exists()) {
-            $slug = $base.'-'.$suffix++;
-        }
-        return $slug;
+        $slug = Str::slug($name);
+        $count = static::where('slug', 'LIKE', "{$slug}%")->count();
+        return $count > 0 ? "{$slug}-{$count}" : $slug;
     }
-
-    public function photos(){ return $this->hasMany(\App\Models\AtelierPhoto::class); }
-    public function comments() { return $this->morphMany(Comment::class, 'commentable'); }
-    public function categories(){ return $this->belongsToMany(\App\Models\Category::class, 'atelier_category'); }
 }

@@ -1,44 +1,43 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\AtelierController;
-use App\Http\Controllers\Atelier\AtelierPhotoController; 
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Atelier\AtelierPhotoController;
 use App\Http\Controllers\Atelier\AtelierCommentController;
-use App\Models\Atelier; 
 
-    Route::get('/', [PageController::class, 'index'])->name('home');
-    Route::controller(PageController::class)->name('page.')->group(function () {
-    Route::get('/page', 'index')->name('index'); 
-    Route::get('/page/about', 'about')->name('about');
-    Route::get('/page/faq', 'faq')->name('faq');
-    Route::get('/page/match', 'match')->name('match');
-    Route::get('/page/catalog', 'catalog')->name('catalog');
-    Route::get('/page/select', 'select')->name('select');
-    Route::post('/page/result', 'result')->name('result');
+Route::get('/', [PageController::class, 'index'])->name('home');
+
+Route::controller(PageController::class)->prefix('page')->name('page.')->group(function () {
+    Route::get('/index', 'index')->name('index');
+    Route::get('/about', 'about')->name('about');
+    Route::get('/faq', 'faq')->name('faq');
+    Route::get('/catalog', 'catalog')->name('catalog');
+    Route::get('/match', 'match')->name('match');
+    Route::get('/select', 'select')->name('select');
+    Route::post('/result', 'result')->name('result');
 });
 
-    Route::controller(AtelierController::class)->name('page.')->group(function () {
-    Route::get('/page/atelier', 'index')->name('atelier');
-    Route::get('/page/atelier/{slug}', 'show')->name('atelier.show');
-});
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
-Route::prefix('ateliers/{atelier:slug}')->name('ateliers.')->group(function () {
-    Route::get('photos', [AtelierPhotoController::class, 'index'])->name('photos.index');
-});
-Route::get('/page/dashboard', function () {
+Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+Route::get('/order/success', fn() => view('order.success'))->name('orders.success');
+
+Route::get('/ateliers', [AtelierController::class, 'index'])->name('ateliers.index');
+Route::get('/ateliers/{atelier:slug}', [AtelierController::class, 'show'])->name('ateliers.show');
+
+Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->name('profile.')->controller(ProfileController::class)->group(function () {
-    Route::get('/profile', 'edit')->name('edit');
-    Route::patch('/profile', 'update')->name('update');
-    Route::delete('/profile', 'destroy')->name('destroy');
+Route::middleware('auth')->prefix('profile')->name('profile.')->group(function () {
+    Route::get('/', [ProfileController::class, 'edit'])->name('edit');
+    Route::patch('/', [ProfileController::class, 'update'])->name('update');
+    Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
 });
-
-require __DIR__.'/auth.php';
-
 
 Route::middleware(['auth'])->prefix('ateliers/{atelier:slug}')->name('ateliers.')->group(function () {
     Route::resource('photos', AtelierPhotoController::class);
@@ -46,3 +45,4 @@ Route::middleware(['auth'])->prefix('ateliers/{atelier:slug}')->name('ateliers.'
     Route::delete('comments/{comment}', [AtelierCommentController::class, 'destroy'])->name('comments.destroy');
 });
 
+require __DIR__.'/auth.php';
