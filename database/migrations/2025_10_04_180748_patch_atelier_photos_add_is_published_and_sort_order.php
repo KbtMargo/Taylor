@@ -12,7 +12,6 @@ return new class extends Migration {
             return;
         }
 
-        // 1) Додаємо відсутні колонки
         Schema::table('atelier_photos', function (Blueprint $t) {
             if (!Schema::hasColumn('atelier_photos', 'is_published')) {
                 $t->boolean('is_published')->default(true)->after('image_path');
@@ -22,17 +21,9 @@ return new class extends Migration {
             }
         });
 
-        // 2) Якщо є стара колонка 'published', перенесемо значення
         if (Schema::hasColumn('atelier_photos', 'published') && Schema::hasColumn('atelier_photos', 'is_published')) {
             DB::statement('UPDATE atelier_photos SET is_published = published WHERE published IS NOT NULL');
         }
-
-        // (необов’язково) Можеш відразу дропнути стару колонку 'published':
-        // Schema::table('atelier_photos', function (Blueprint $t) {
-        //     if (Schema::hasColumn('atelier_photos', 'published')) {
-        //         $t->dropColumn('published');
-        //     }
-        // });
     }
 
     public function down(): void
