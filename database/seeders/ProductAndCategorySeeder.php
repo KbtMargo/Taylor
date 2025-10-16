@@ -6,7 +6,6 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\ProductImage;
 
 class ProductAndCategorySeeder extends Seeder
 {
@@ -15,54 +14,70 @@ class ProductAndCategorySeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         Category::truncate();
         Product::truncate();
-        ProductImage::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         $category = Category::create(['name' => 'Тканини']);
 
         $materials = [
             [
-                'name' => 'Трикотаж Бавовна', 'image' => '/images/trikotazh-bavovna.jpg', 'description' => 'Білий, Рожевий, Синій +1 · Доставка: 2-3 дні',
-                'price' => '320', 'in_stock' => true,
+                'name' => 'Трикотаж Бавовна',
+                'image' => '/images/trikotazh-bavovna.jpg',
+                'description' => 'М\'який та еластичний трикотаж, ідеально підходить для пошиття повсякденного одягу, футболок та дитячих речей.',
+                'price' => '320', 'stock_m' => 50,
+                'material' => '95% бавовна, 5% еластан', 'color' => 'Білий', 'width_cm' => 180, 'sku' => 'TB-001',
             ],
             [
-                'name' => 'Вовна Костюмна', 'image' => '/images/vovna-kostumna.jpg', 'description' => 'Синій, Сірий, Зелений +1 · Доставка: 5-7 днів',
-                'price' => '500', 'in_stock' => true,
+                'name' => 'Вовна Костюмна',
+                'image' => '/images/vovna-costumna.jpg',
+                'description' => 'Класична костюмна тканина з вовни, добре тримає форму, підходить для пошиття костюмів, спідниць та брюк.',
+                'price' => '500', 'stock_m' => 30,
+                'material' => '80% вовна, 20% поліестер', 'color' => 'Темно-синій', 'width_cm' => 150, 'sku' => 'VK-002',
             ],
             [
-                'name' => 'Шовк Принт', 'image' => '/images/shovk-print.jpg', 'description' => 'Білий, Кремовий, Сірий +2 · Доставка: 3-5 днів',
-                'price' => '420', 'in_stock' => true,
+                'name' => 'Шовк Принт',
+                'image' => '/images/shovk-print.jpg',
+                'description' => 'Легкий та повітряний шовк з елегантним принтом для блуз, суконь та шарфів.',
+                'price' => '420', 'stock_m' => 45,
+                'material' => '100% шовк Армані', 'color' => 'Кремовий з принтом', 'width_cm' => 140, 'sku' => 'SP-003',
             ],
             [
-                'name' => 'Підкладка Віскоза', 'image' => '/images/pidkladka-viskoza.jpg', 'description' => 'Білий, Кремовий, Бежевий +1 · Доставка: 1-2 дні',
-                'price' => '200', 'in_stock' => true,
+                'name' => 'Підкладка Віскоза',
+                'image' => '/images/pidkladks-viskoza.jpg',
+                'description' => 'Гладка та дихаюча підкладкова тканина з віскози, забезпечує комфорт при носінні верхнього одягу.',
+                'price' => '200', 'stock_m' => 150,
+                'material' => '100% віскоза', 'color' => 'Бежевий', 'width_cm' => 150, 'sku' => 'PV-004',
             ],
             [
-                'name' => 'Льон Класичний', 'image' => '/images/lyon.jpg', 'description' => 'Бежевий, Коричневий, Темно-синій +2 · Доставка: 4-6 днів',
-                'price' => '300', 'in_stock' => false,
+                'name' => 'Льон Класичний',
+                'image' => '/images/lyon.jpg',
+                'description' => 'Натуральна лляна тканина, ідеальна для літнього одягу. Має характерну фактуру.',
+                'price' => '300', 'stock_m' => 0, 
+                'material' => '100% льон', 'color' => 'Натуральний (беж)', 'width_cm' => 145, 'sku' => 'LK-005',
             ],
             [
-                'name' => 'Шкіра Еко', 'image' => '/images/shkiro-eco.jpg', 'description' => 'Бежевий, Коричневий, Темно-червоний +1 · Доставка: 3-5 днів',
-                'price' => '550', 'in_stock' => true,
+                'name' => 'Шкіра Еко',
+                'image' => '/images/shkira-eco.jpg',
+                'description' => 'Високоякісна еко-шкіра на трикотажній основі. Еластична та стійка до зношування.',
+                'price' => '550', 'stock_m' => 25,
+                'material' => 'Поліуретан, поліестер', 'color' => 'Чорний', 'width_cm' => 140, 'sku' => 'SE-006',
             ],
         ];
 
         foreach ($materials as $material) {
-            $product = Product::create([
+            Product::create([
                 'category_id' => $category->category_id,
-                'name' => $material['name'],
+                'name'        => $material['name'],
+                'image'       => $material['image'],
                 'description' => $material['description'],
                 'price_per_m' => (float)$material['price'],
-                'stock_m' => $material['in_stock'] ? rand(10, 100) : 0,
-                'is_active' => true,
-            ]);
-
-            ProductImage::create([
-                'product_id' => $product->product_id,
-                'url' => $material['image'],
-                'alt_text' => $material['name'],
-                'sort_order' => 1,
+                'stock_m'     => (float)$material['stock_m'],
+                'is_active'   => true,
+                'material'    => $material['material'],
+                'color'       => $material['color'],
+                'width_cm'    => $material['width_cm'],
+                'sku'         => $material['sku'],
             ]);
         }
     }
 }
+

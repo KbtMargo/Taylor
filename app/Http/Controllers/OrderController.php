@@ -7,62 +7,73 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
     public function store(Request $request)
     {
+        Log::info('OrderController@store method called.');
+
         $validator = Validator::make($request->all(), [
             'product_id' => 'required|exists:products,product_id',
-            'quantity' => 'required|numeric|min:0.1',
+            'quantity_m' => 'required|numeric|min:0.1', 
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:255',
+            'customer_email' => 'required|email|max:255',
+            'delivery_service' => 'nullable|string|max:255',
+            'delivery_address' => 'nullable|string|max:255',
+            'customer_comment' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            Log::warning('Order validation failed.', $validator->errors()->all());
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $product = Product::findOrFail($request->input('product_id'));
-        $quantity = $request->input('quantity');
+        Log::info('Order validation successful.');
 
-        if ($product->stock_m < $quantity) {
-            return back()->withErrors(['quantity' => 'На жаль, на складі недостатньо тканини.'])->withInput();
+        $product = Product::findOrFail($request->product_id);
+
+        if ($product->stock_m < $request->quantity_m) {
+            Log::warning('Not enough stock for product ID: ' . $product->product_id);
+            return redirect()->back()->withErrors(['quantity_m' => 'Вибачте, на складі недостатньо товару.'])->withInput();
         }
+
+        $totalAmount = $product->price_per_m * $request->quantity_m;
 
         DB::beginTransaction();
         try {
-            $totalAmount = $product->price_per_m * $quantity;
-
             $order = Order::create([
-                'customer_name' => $request->input('customer_name'),
-                'customer_phone' => $request->input('customer_phone'),
+                'customer_name' => $request->customer_name,
+                'customer_phone' => $request->customer_phone,
+                'customer_email' => $request->customer_email,
                 'total_amount' => $totalAmount,
-                'status' => 'new',
+                'delivery_service' => $request->delivery_service,
+                'delivery_address' => $request->delivery_address,
+                'customer_comment' => $request->customer_comment,
             ]);
 
             OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $product->product_id,
-                'quantity_m' => $quantity,
+                'quantity_m' => $request->quantity_m,
                 'price_per_m' => $product->price_per_m,
             ]);
 
-            $product->decrement('stock_m', $quantity);
+            $product->decrement('stock_m', $request->quantity_m);
 
             DB::commit();
 
-            return redirect()->route('order.success');
+            Log::info('Order created successfully. Order ID: ' . $order->id);
+            return redirect()->back()->with('success', 'Ваше замовлення успішно оформлено! Наш менеджер скоро з вами зв\'яжеться.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['general' => 'Сталася помилка під час оформлення замовлення. Спробуйте ще раз.'])->withInput();
+            Log::error('Error storing order: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['msg' => 'Виникла помилка при оформленні замовлення. Спробуйте ще раз.'])->withInput();
         }
     }
-
-    public function success()
-    {
-        return view('order.success');
-    }
 }
+

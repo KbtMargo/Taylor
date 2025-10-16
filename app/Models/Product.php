@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -8,11 +9,14 @@ class Product extends Model
 {
     protected $primaryKey = 'product_id';
     protected $fillable = [
-        'category_id','name','slug','description','price_per_m','stock_m',
-        'color','width_cm','material','sku','is_active'
+        'category_id', 'name', 'slug', 'image', 'description', 'price_per_m', 'stock_m',
+        'color', 'width_cm', 'material', 'sku', 'is_active'
     ];
 
-    public function getRouteKeyName(): string { return 'slug'; }
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 
     protected static function booted()
     {
@@ -27,18 +31,15 @@ class Product extends Model
     {
         $base = Str::slug($name ?: 'product');
         $slug = $base ?: 'product';
-        $i=1;
-        while (static::query()->where('slug',$slug)->exists()) {
-            $slug = ($base ?: 'product').'-'.$i++;
+        $i = 1;
+        while (static::query()->where('slug', $slug)->exists()) {
+            $slug = ($base ?: 'product') . '-' . $i++;
         }
         return $slug;
     }
 
-    public function category(){ return $this->belongsTo(Category::class, 'category_id', 'category_id'); }
-    public function images(){ return $this->hasMany(ProductImage::class, 'product_id', 'product_id')->orderBy('sort_order'); }
-
-    public function getFirstImageUrlAttribute()
+    public function category()
     {
-        return optional($this->images->first())->url ?? '/images/placeholder.jpg';
+        return $this->belongsTo(Category::class, 'category_id', 'category_id');
     }
 }
