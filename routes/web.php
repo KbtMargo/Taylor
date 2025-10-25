@@ -8,6 +8,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Atelier\AtelierPhotoController;
 use App\Http\Controllers\Atelier\AtelierCommentController;
+use App\Http\Controllers\ChatController;
 
 Route::get('/', [PageController::class, 'index'])->name('home');
 
@@ -21,6 +22,10 @@ Route::controller(PageController::class)->prefix('page')->name('page.')->group(f
     Route::post('/result', 'result')->name('result');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::post('/chat/load', [ChatController::class, 'loadChat'])->name('chat.load');
+    Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
+});
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
 Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
