@@ -45,4 +45,22 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+
+    /**
+     * Чати, в яких бере участь користувач.
+     */
+    public function chats(): BelongsToMany
+    {
+        // Зв'язок "багато-до-багатьох" через таблицю 'participants'
+        return $this->belongsToMany(Chat::class, 'participants', 'user_id', 'chat_id');
+    }
+
+    /**
+     * Повідомлення, які відправив користувач.
+     */
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class);
+    }
 }
