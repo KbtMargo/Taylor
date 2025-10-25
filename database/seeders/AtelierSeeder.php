@@ -10,13 +10,10 @@ class AtelierSeeder extends Seeder
 {
     public function run(): void
     {
-        // Тимчасово вимикаємо перевірку зовнішніх ключів
         Schema::disableForeignKeyConstraints();
 
-        // Тепер ця команда виконається без помилок
         Atelier::truncate();
 
-        // Вмикаємо перевірку назад
         Schema::enableForeignKeyConstraints();
 
         $ateliers = [

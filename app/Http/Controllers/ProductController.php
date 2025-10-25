@@ -12,7 +12,7 @@ class ProductController extends Controller
      * Display the specified resource.
      */
     public function show(Product $product)
-    {
+    {   
         return view('product.show', compact('product'));
     }
 }

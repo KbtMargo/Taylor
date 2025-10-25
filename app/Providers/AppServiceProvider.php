@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use App\View\Components\ChatComposer; 
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\QueryModeMiddleware;
-
+use Illuminate\Support\Facades\View; 
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,15 +14,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // ...
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         Route::aliasMiddleware('query.mode', QueryModeMiddleware::class);
+        View::composer('layouts.app', ChatComposer::class);
 
     }
 }

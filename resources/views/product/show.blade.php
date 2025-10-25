@@ -30,7 +30,6 @@
             <div class="d-flex align-items-center my-3">
                 <span class="price h3 me-4">{{ $product->price_per_m }} грн/м</span>
                 
-                {{-- --- ОСНОВНА ЗМІНА ТУТ --- --}}
                 @if($product->stock_m > 0)
                     <span class="badge bg-success fs-6 me-2">В наявності</span>
                     <span class="text-muted small">Залишилось: {{ $product->stock_m }} м</span>
@@ -88,7 +87,6 @@
                     <h6 class="text-muted">Деталі замовлення</h6>
                     <div class="mb-3">
                         <label for="quantity" class="form-label">Кількість (метрів):</label>
-                        {{-- --- І ЩЕ ОДНА ЗМІНА ТУТ (додано max) --- --}}
                         <input type="number" class="form-control" id="quantity" name="quantity_m" value="{{ old('quantity_m', 1) }}" min="0.1" step="0.1" max="{{ $product->stock_m }}" required>
                     </div>
                      <div class="mb-3">
