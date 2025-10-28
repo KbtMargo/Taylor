@@ -3,23 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <!-- CSRF-токен (ОБОВ'ЯЗКОВО ДЛЯ POST-ЗАПИТІВ ТА ECHO) -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  
   <title>@yield('title','DressCode')</title>
-  
-  <!-- Ваш оригінальний Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  
-  <!-- Ваш оригінальний style.css (який містить стилі хедера/футера) -->
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   
-  <!-- 
-    !! ВБУДОВАНІ СТИЛІ ЧАТУ !!
-  -->
   <style>
-    /* --- СТИЛІ ЧАТУ --- */
     #chat-toggle-button {
         position: fixed;
         bottom: 20px;
@@ -38,7 +27,6 @@
     }
     #chat-toggle-button svg { width: 32px; height: 32px; }
 
-    /* Вікно чату, що плаває */
     #chat-window {
         position: fixed;
         bottom: 90px;
@@ -49,7 +37,7 @@
         background-color: white;
         border-radius: 10px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        display: none; /* Зміниться на 'flex' через JS */
+        display: none; 
         flex-direction: column;
         z-index: 9999;
     }
@@ -68,7 +56,6 @@
     #chat-close-button { cursor: pointer; font-size: 24px; }
     #chat-body { flex-grow: 1; display: flex; flex-direction: column; overflow-y: hidden; }
 
-    /* Список отримувачів */
     #recipient-list {
         padding: 10px;
         overflow-y: auto;
@@ -78,9 +65,8 @@
     .chat-recipient-item { padding: 12px 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-weight: 500; }
     .chat-recipient-item:hover { background-color: #f9f9f9; }
 
-    /* Вікно повідомлень */
     #message-view {
-        display: flex; /* 'flex' за замовчуванням */
+        display: flex; 
         flex-direction: column;
         height: 100%;
     }
@@ -111,7 +97,6 @@
     #send-message-button { background: none; border: none; cursor: pointer; padding: 0 10px; }
     #send-message-button svg { width: 24px; height: 24px; color: #007bff; }
 
-    /* Бульбашки Повідомлень */
     .message-bubble {
         max-width: 80%;
         padding: 8px 12px;
@@ -137,25 +122,10 @@
     }
     .message-bubble .message-content {
         word-wrap: break-word;
-        padding-right: 25px; /* Місце для галочок */
+        /* padding-right: 25px; - Видалено */
     }
-
-    /* Статуси Повідомлень (Галочки) */
-    .message-status {
-        font-size: 0.9rem;
-        font-weight: bold;
-        position: absolute;
-        bottom: 6px;
-        right: 10px;
-    }
-    .status-sent {
-        color: #9ab0c7; /* Сіра галочка */
-    }
-    .status-read {
-        color: #4fc3f7; /* Блакитні галочки */
-    }
+    /* Видалено стилі для .message-status, .status-sent, .status-read */
   </style>
-  <!-- === КІНЕЦЬ СТИЛІВ ЧАТУ === -->
 
 </head>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -204,7 +174,6 @@
     &copy; {{ date('Y') }} DressCode. Всі права захищені.
 </footer>
 
-<!-- === HTML ЧАТУ === -->
 @auth  
     <div id="chat-toggle-button">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -212,7 +181,6 @@
         </svg>
     </div>
 
-    <!-- ID поточного користувача -->
     <div id="chat-window" style="display: none;" data-current-user-id="{{ Auth::id() }}">
         <div id="chat-header">
             <span id="chat-header-title">Підтримка</span>
@@ -220,7 +188,6 @@
         </div>
         <div id="chat-body">
             
-            <!-- Екран 1: Список користувачів -->
             <div id="recipient-list">
                 <p>Виберіть, кому написати:</p>
                 <ul>
@@ -236,14 +203,12 @@
                 </ul>
             </div>
             
-            <!-- Екран 2: Вікно повідомлень (показується JS) -->
             <div id="message-view" style="display: none;">
                 <div id="message-header">
                     <button id="back-to-list">&larr;</button>
                     <span id="chat-with-name"></span>
                 </div>
                 <div id="message-list">
-                    <!-- Повідомлення будуть завантажуватися тут -->
                 </div>
                 <div id="message-input-area">
                     <input type="text" id="message-input" placeholder="Напишіть повідомлення...">
@@ -258,36 +223,23 @@
         </div>
     </div>
 @endauth
-<!-- === КІНЕЦЬ HTML ЧАТУ === -->
 
-
-<!-- 
-  !! ВБУДОВАНИЙ JAVASCRIPT (ОНОВЛЕНО З ВІДЛАДКОЮ) !!
--->
-<!-- 1. Підключення Socket.IO клієнта (з CDN) -->
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/laravel-echo@^1.11.0/dist/echo.iife.js"></script>
 
-<!-- 2. !! ВИПРАВЛЕНО: Підключення Laravel Echo (з CDN) !! -->
-<script src="https://cdn.jsdelivr.net/npm/laravel-echo/dist/echo.js"></script>
-
-<!-- 3. Наша логіка чату -->
 <script>
 document.addEventListener('DOMContentLoaded', (event) => {
 
-    // --- Перевірка, чи ми залогінені ---
     const chatWindow = document.getElementById('chat-window');
     if (!chatWindow) {
-        console.log('Chat window not found. User might not be logged in. Script stopped.');
-        return; // Якщо чату немає, нічого не робимо
+        return; 
     }
 
-    // --- Глобальні змінні ---
-    let currentChatId = null; // ID поточного відкритого чату
-    let currentChatMessages = {}; // Кеш повідомлень
+    let currentChatId = null; 
+    let currentChatMessages = {}; 
     const currentUserId = chatWindow.dataset.currentUserId;
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     
-    // --- Елементи DOM ---
     const toggleButton = document.getElementById('chat-toggle-button');
     const closeButton = document.getElementById('chat-close-button');
     const recipientListScreen = document.getElementById('recipient-list');
@@ -300,162 +252,97 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-message-button');
 
-    // --- ВІДЛАДКА: Перевірка завантаження бібліотек ---
-    console.log('Chat script initializing...');
     if (typeof window.io === 'undefined') {
-        console.error('CRITICAL: Socket.IO (window.io) is NOT loaded. Check CDN link.');
-        return; // Зупиняємо скрипт
+        console.error('CRITICAL: Socket.IO (window.io) is NOT loaded.');
+        return; 
     }
-    console.log('Socket.IO is loaded.');
-
     if (typeof window.Echo === 'undefined') {
-        console.error('CRITICAL: Laravel Echo (window.Echo) is NOT loaded. Check CDN link.');
-        return; // Зупиняємо скрипт
+        console.error('CRITICAL: Laravel Echo (window.Echo) is NOT loaded.');
+        return; 
     }
-    console.log('Laravel Echo is loaded.');
-    // --- КІНЕЦЬ ВІДЛАДКИ ---
 
-
-    // --- Ініціалізація Echo ---
-    let Echo; // Оголошуємо Echo
+    let Echo; 
     try {
         Echo = new window.Echo({
             broadcaster: 'socket.io',
-            host: window.location.hostname + ':6001', // Наш Node.js сервер
+            host: window.location.hostname + ':6001', 
             auth: {
                 headers: {
                     'X-CSRF-TOKEN': csrfToken,
                 },
             },
         });
-        console.log('Echo initialized successfully.');
     } catch (e) {
         console.error('CRITICAL: Failed to initialize Echo constructor.', e);
-        return; // Зупиняємо скрипт, якщо конструктор впав
+        return; 
     }
 
-    // --- Функції ---
-    // (Тут всі ваші функції: displayMessage, updateAllMessageStatuses, і т.д.)
-
-    /**
-     * Відображає одне повідомлення у вікні чату
-     */
     function displayMessage(message, isPending = false) {
+        if (messageList.querySelector(`[data-message-id="${message.id}"]`)) {
+            return;
+        }
+
         const bubble = document.createElement('div');
         bubble.classList.add('message-bubble');
-        
-        // Встановлюємо ID для майбутніх оновлень
         bubble.dataset.messageId = message.id; 
 
         if (message.user_id == currentUserId) {
             bubble.classList.add('outgoing');
-            
             const content = document.createElement('div');
             content.classList.add('message-content');
             content.innerText = message.content;
-            
-            const statusIcon = document.createElement('span');
-            statusIcon.classList.add('message-status');
-            
-            if (isPending || !message.status) {
-                statusIcon.classList.add('status-sent');
-                statusIcon.innerText = '✓'; // 1 сіра галочка (в процесі)
-            } else if (message.status === 'read') {
-                statusIcon.classList.add('status-read');
-                statusIcon.innerText = '✓✓'; // 2 блакитні галочки (прочитано)
-            } else {
-                statusIcon.classList.add('status-sent');
-                statusIcon.innerText = '✓'; // 1 сіра галочка (відправлено)
-            }
-            
             bubble.appendChild(content);
-            bubble.appendChild(statusIcon);
-            
         } else {
             bubble.classList.add('incoming');
-            
+            const senderName = (message.user && message.user.name) ? message.user.name : 'Unknown';
             const userName = document.createElement('div');
             userName.classList.add('message-user');
-            userName.innerText = message.user.name;
+            userName.innerText = senderName;
             bubble.appendChild(userName);
 
             const content = document.createElement('div');
             content.classList.add('message-content');
-            // Вхідні повідомлення не мають галочок
             content.style.paddingRight = '0'; 
             content.innerText = message.content;
             bubble.appendChild(content);
         }
-
         messageList.appendChild(bubble);
     }
 
-    /**
-     * Оновлює статус галочок для всіх наших повідомлень
-     */
-    function updateAllMessageStatuses(chatId) {
-        if (chatId != currentChatId) return; // Оновлюємо тільки активний чат
-
-        const bubbles = messageList.querySelectorAll('.message-bubble.outgoing');
-        bubbles.forEach(bubble => {
-            const icon = bubble.querySelector('.message-status');
-            if (icon && !icon.classList.contains('status-read')) {
-                icon.classList.remove('status-sent');
-                icon.classList.add('status-read');
-                icon.innerText = '✓✓';
-            }
-        });
-    }
-
-    /**
-     * Прокручує чат до останнього повідомлення
-     */
     function scrollToBottom() {
-        messageList.scrollTop = messageList.scrollHeight;
+        setTimeout(() => {
+            if (messageList) { 
+                 messageList.scrollTop = messageList.scrollHeight;
+            }
+        }, 50); 
     }
 
-    /**
-     * Перемикає екрани (список або чат)
-     */
     function showScreen(screenName) {
         if (screenName === 'messages') {
-            recipientListScreen.style.display = 'none';
-            messageViewScreen.style.display = 'flex';
-            chatHeaderTitle.style.display = 'none'; // Ховаємо "Підтримка"
+            if (recipientListScreen) recipientListScreen.style.display = 'none';
+            if (messageViewScreen) messageViewScreen.style.display = 'flex';
+            if (chatHeaderTitle) chatHeaderTitle.style.display = 'none'; 
         } else {
-            recipientListScreen.style.display = 'block';
-            messageViewScreen.style.display = 'none';
-            chatHeaderTitle.style.display = 'block'; // Показуємо "Підтримка"
-            currentChatId = null; // Вийшли з чату
+            if (recipientListScreen) recipientListScreen.style.display = 'block';
+            if (messageViewScreen) messageViewScreen.style.display = 'none';
+            if (chatHeaderTitle) chatHeaderTitle.style.display = 'block'; 
+            currentChatId = null; 
         }
     }
 
-    /**
-     * Повідомляє сервер, що ми прочитали чат (через 'whisper')
-     */
-    function markChatAsRead(chatId) {
-        if (!chatId) return;
-        
-        try {
-            // Знаходимо канал і відправляємо "whisper"
-            const channel = Echo.private('chat.' + chatId);
-            channel.whisper('read', {
-                chat_id: chatId,
-                user_id: currentUserId
-            });
-        } catch (e) {
-            console.error("Failed to send whisper:", e);
-        }
-    }
-
-
-    /**
-     * Завантажує історію чату з сервером (або створює новий чат)
-     */
     async function loadChat(recipientId, recipientName) {
-        messageList.innerHTML = '';
-        chatWithName.innerText = `Чат з ${recipientName}`;
+        if (messageList) messageList.innerHTML = ''; 
+        if (chatWithName) chatWithName.innerText = `Чат з ${recipientName}`;
         showScreen('messages');
+
+        if (currentChatId && typeof Echo !== 'undefined') {
+             try {
+                Echo.leave('chat.' + currentChatId); 
+            } catch (e) {
+                console.warn("Error leaving previous channel:", e);
+            }
+        }
+        currentChatId = null; 
 
         try {
             const response = await fetch('/chat/load', {
@@ -469,45 +356,38 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 })
             });
 
-            if (!response.ok) throw new Error('Network response was not ok');
+            if (!response.ok) throw new Error(`Network response was not ok (${response.status})`);
             const data = await response.json();
             
-            currentChatId = data.chat.id;
+            currentChatId = data.chat.id; 
             
-            // Відображаємо всі повідомлення з кешу або нові
             currentChatMessages[currentChatId] = data.messages;
             data.messages.forEach(msg => displayMessage(msg, false));
             
-            // Підписуємося на канал цього чату
-            subscribeToChannel(currentChatId);
-            
             scrollToBottom();
             
-            // Повідомляємо іншим, що ми прочитали повідомлення
-            markChatAsRead(currentChatId);
-
+            subscribeToChannel(currentChatId); 
+            
         } catch (error) {
             console.error('Error loading chat:', error);
-            chatWithName.innerText = 'Помилка завантаження';
+            if (chatWithName) chatWithName.innerText = 'Помилка завантаження';
         }
     }
 
-    /**
-     * Відправляє нове повідомлення на сервер
-     */
     async function sendMessage() {
+        if (!messageInput) return; 
         const content = messageInput.value.trim();
         if (content === '' || !currentChatId) return;
 
-        const tempId = 'temp_' + Date.now(); // Тимчасовий ID
+        const tempId = 'temp_' + Date.now(); 
         const pendingMessage = {
             id: tempId,
             user_id: currentUserId,
             content: content,
-            user: { name: 'Me' } // Заглушка
+            user: { name: 'Me' } 
         };
         
-        displayMessage(pendingMessage, true); // true = в очікуванні
+        displayMessage(pendingMessage, true); 
         scrollToBottom();
         messageInput.value = '';
 
@@ -524,72 +404,67 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 })
             });
 
-            if (!response.ok) throw new Error('Failed to send message');
+            if (!response.ok) throw new Error(`Failed to send message (${response.status})`);
 
             const newMessage = await response.json();
             
-            // Оновлюємо тимчасове повідомлення на справжнє
             const tempBubble = messageList.querySelector(`[data-message-id="${tempId}"]`);
             if (tempBubble) {
-                tempBubble.dataset.messageId = newMessage.id;
-                // Статус '✓' вже стоїть, оскільки він прийшов з 'sendMessage'
-            }
-            
-            // Додаємо в кеш
-            if(currentChatMessages[currentChatId]) {
-                 currentChatMessages[currentChatId].push(newMessage);
+                tempBubble.dataset.messageId = newMessage.id; 
+                if (newMessage) {
+                    if(currentChatMessages[currentChatId]) {
+                        const index = currentChatMessages[currentChatId].findIndex(m => m.id === tempId);
+                        if (index > -1) {
+                            currentChatMessages[currentChatId][index] = newMessage;
+                        } else {
+                            currentChatMessages[currentChatId].push(newMessage);
+                        }
+                    }
+                }
+            } else {
+                 displayMessage(newMessage, false);
+                 scrollToBottom();
+                 if(currentChatMessages[currentChatId]) {
+                    currentChatMessages[currentChatId].push(newMessage);
+                 }
             }
 
         } catch (error) {
             console.error('Error sending message:', error);
             const tempBubble = messageList.querySelector(`[data-message-id="${tempId}"]`);
             if (tempBubble) {
-                tempBubble.querySelector('.message-content').innerText = "Помилка відправки";
+                const contentDiv = tempBubble.querySelector('.message-content');
+                if (contentDiv) contentDiv.innerText = "Помилка відправки"; 
+                const errorIcon = document.createElement('span');
+                errorIcon.innerText = ' ⚠️';
+                errorIcon.style.color = 'red';
+                tempBubble.appendChild(errorIcon);
             }
         }
     }
 
-    /**
-     * Підписка на приватний канал чату
-     */
     function subscribeToChannel(chatId) {
-        // Відписуємося від старого каналу, якщо він був
-        if (currentChatId && currentChatId !== chatId) {
-            try {
-                Echo.leave('chat.'M + currentChatId);
-            } catch (e) {
-                console.warn("Error leaving channel:", e);
-            }
-        }
+        if (!chatId || !Echo) return; 
 
         try {
             Echo.private('chat.' + chatId)
+                .stopListening('MessageSent') 
                 .listen('MessageSent', (e) => {
-                    // Нове повідомлення прийшло!
-                    console.log('MessageSent event received:', e);
-                    
-                    // Додаємо в кеш
-                    if(currentChatMessages[chatId]) {
+                    if (!e || !e.message) {
+                        console.error("Invalid MessageSent event received:", e);
+                        return;
+                    }
+                    if(currentChatMessages[chatId] && !currentChatMessages[chatId].some(m => m.id === e.message.id)) {
                         currentChatMessages[chatId].push(e.message);
                     }
 
-                    // Відображаємо, тільки якщо чат відкритий
-                    if (chatId == currentChatId) {
-                        displayMessage(e.message, false);
-                        scrollToBottom();
-                        
-                        // Одразу позначаємо як прочитане
-                        markChatAsRead(chatId);
+                    if (chatId == currentChatId) { 
+                        if (!messageList.querySelector(`[data-message-id="${e.message.id}"]`)) {
+                            displayMessage(e.message, false);
+                            scrollToBottom();
+                        }
                     } else {
-                        // TODO: Показати іконку "нове повідомлення" біля юзера
-                        console.log('New message in hidden chat', chatId);
-                    }
-                })
-                .listenForWhisper('read', (e) => {
-                    // Інший юзер прочитав повідомлення!
-                    console.log('Read event received:', e);
-                    if (e.user_id != currentUserId) {
-                        updateAllMessageStatuses(e.chat_id);
+                        // TODO: Додати індикацію непрочитаних
                     }
                 });
         } catch (e) {
@@ -597,73 +472,78 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-
-    // --- Обробники Подій ---
-    console.log('Attaching listeners...');
-
-    // 1. Відкрити вікно чату
-    toggleButton.addEventListener('click', () => {
-        console.log('Toggle button clicked!'); // ВІДЛАДКА
-        chatWindow.style.display = 'flex';
-        toggleButton.style.display = 'none';
-        showScreen('recipients'); // Завжди починаємо зі списку
-    });
-
-    // 2. Закрити вікно чату
-    closeButton.addEventListener('click', () => {
-        console.log('Close button clicked!'); // ВІДЛАДКА
-        chatWindow.style.display = 'none';
-        toggleButton.style.display = 'flex';
-        // Відписуємося від поточного каналу
-        if (currentChatId) {
-            try {
-                Echo.leave('chat.' + currentChatId);
-            } catch (e) {
-                console.warn("Error leaving channel on close:", e);
-            }
-            currentChatId = null;
-        }
-    });
-
-    // 3. Клік на отримувача зі списку
-    recipientItems.forEach(item => {
-        item.addEventListener('click', () => {
-            console.log('Recipient item clicked:', item.dataset.id); // ВІДЛАДКА
-            loadChat(item.dataset.id, item.innerText);
+    if(toggleButton) { 
+        toggleButton.addEventListener('click', () => {
+            if (chatWindow) chatWindow.style.display = 'flex';
+            if (toggleButton) toggleButton.style.display = 'none';
+            showScreen('recipients'); 
         });
-    });
+    } else {
+        console.error("Toggle button not found!");
+    }
 
-    // 4. Повернення до списку отримувачів
-    backButton.addEventListener('click', () => {
-        console.log('Back button clicked!'); // ВІДЛАДКА
-        showScreen('recipients');
-        // Відписуємося від каналу
-        if (currentChatId) {
-            try {
-                Echo.leave('chat.' + currentChatId);
-            } catch (e) {
-                console.warn("Error leaving channel on back:", e);
+    if(closeButton) { 
+        closeButton.addEventListener('click', () => {
+            if (chatWindow) chatWindow.style.display = 'none';
+            if (toggleButton) toggleButton.style.display = 'flex';
+            if (currentChatId && typeof Echo !== 'undefined') {
+                try {
+                    Echo.leave('chat.' + currentChatId);
+                } catch (e) {
+                    console.warn("Error leaving channel on close:", e);
+                }
+                currentChatId = null;
             }
-            currentChatId = null;
-        }
-    });
+        });
+    } else {
+         console.error("Close button not found!");
+    }
 
-    // 5. Клік на кнопку "Відправити"
-    sendButton.addEventListener('click', sendMessage);
+    if(recipientItems) { 
+        recipientItems.forEach(item => {
+            item.addEventListener('click', () => {
+                loadChat(item.dataset.id, item.innerText);
+            });
+        });
+    } else {
+        console.error("Recipient items not found!");
+    }
 
-    // 6. Відправка по 'Enter'
-    messageInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
+    if(backButton) { 
+        backButton.addEventListener('click', () => {
+            showScreen('recipients');
+            if (currentChatId && typeof Echo !== 'undefined') {
+                try {
+                    Echo.leave('chat.' + currentChatId);
+                } catch (e) {
+                    console.warn("Error leaving channel on back:", e);
+                }
+                currentChatId = null;
+            }
+        });
+    } else {
+         console.error("Back button not found!");
+    }
 
-    console.log('All listeners attached successfully.');
+    if(sendButton) { 
+        sendButton.addEventListener('click', sendMessage);
+    } else {
+         console.error("Send button not found!");
+    }
+
+     if(messageInput) { 
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+     } else {
+          console.error("Message input not found!");
+     }
     
 });
 </script>
-<!-- === КІНЕЦЬ JAVASCRIPT ЧАТУ === -->
 
 </body>
 </html>
