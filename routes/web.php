@@ -25,6 +25,7 @@ Route::controller(PageController::class)->prefix('page')->name('page.')->group(f
 Route::middleware(['auth'])->group(function () {
     Route::post('/chat/load', [ChatController::class, 'loadChat'])->name('chat.load');
     Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::post('/chat/group/create', [ChatController::class, 'createGroupChat'])->name('chat.group.create');
 });
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
