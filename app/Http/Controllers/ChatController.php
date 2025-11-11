@@ -10,14 +10,11 @@ use App\Models\Chat;
 use App\Models\Message;
 use App\Models\User;
 use App\Events\MessageSent;
-use App\Events\MessageDeleted; // Новий івент для видалення повідомлень
-use App\Events\ChatDeleted; // Новий івент для видалення чатів
+use App\Events\MessageDeleted; 
+use App\Events\ChatDeleted;
 
 class ChatController extends Controller
 {
-    /**
-     * Завантажує чат (або створює новий) і його повідомлення
-     */
     public function loadChat(Request $request)
     {
         $recipientId = $request->input('recipient_id');
@@ -88,9 +85,6 @@ class ChatController extends Controller
         ]);
     }
 
-    /**
-     * Зберігає нове повідомлення в базі даних.
-     */
     public function sendMessage(Request $request)
     {
         $validated = $request->validate([
@@ -127,9 +121,6 @@ class ChatController extends Controller
         }
     }
 
-    /**
-     * Створює новий груповий чат.
-     */
     public function createGroupChat(Request $request)
     {
         $validated = $request->validate([
@@ -168,9 +159,6 @@ class ChatController extends Controller
         }
     }
 
-    /**
-     * Видаляє повідомлення (тільки власне)
-     */
     public function deleteMessage(Request $request, $messageId)
     {
         $currentUser = Auth::user();
@@ -183,7 +171,6 @@ class ChatController extends Controller
             $chatId = $message->chat_id;
             $message->delete();
 
-            // Транслюємо інформацію про видалення всім учасникам чату
             broadcast(new MessageDeleted($messageId, $chatId))->toOthers();
 
             Log::info('Message deleted successfully', ['messageId' => $messageId, 'userId' => $currentUser->id]);
@@ -195,9 +182,6 @@ class ChatController extends Controller
         }
     }
 
-    /**
-     * Видаляє чат (тільки для приватних чатів або якщо користувач є учасником групового чату)
-     */
     public function deleteChat(Request $request, $chatId)
     {
         $currentUser = Auth::user();
@@ -205,11 +189,9 @@ class ChatController extends Controller
         try {
             $chat = $currentUser->chats()->findOrFail($chatId);
 
-            // Для приватних чатів - видаляємо зв'язок учасника
             if ($chat->type === 'private') {
                 $chat->participants()->detach($currentUser->id);
                 
-                // Якщо в чаті не залишилося учасників - видаляємо чат повністю
                 if ($chat->participants()->count() === 0) {
                     $chat->messages()->delete();
                     $chat->delete();
@@ -220,9 +202,7 @@ class ChatController extends Controller
                 return response()->json(['success' => true, 'message' => 'Чат видалено']);
             }
             
-            // Для групових чатів - тільки адміністратор може видалити (тут можна додати перевірку на роль)
             elseif ($chat->type === 'group') {
-                // Проста перевірка - якщо користувач є учасником, він може "покинути" групу
                 $chat->participants()->detach($currentUser->id);
                 
                 Log::info('User left group chat', ['chatId' => $chatId, 'userId' => $currentUser->id]);
