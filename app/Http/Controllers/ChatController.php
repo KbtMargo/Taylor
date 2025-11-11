@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log; // Додано для логування
+use Illuminate\Support\Facades\Log;
 use App\Models\Chat;
 use App\Models\Message;
 use App\Models\User;
-use App\Events\MessageSent; // <--- ОСЬ ЦЕЙ ВАЖЛИВИЙ РЯДОК
+use App\Events\MessageSent;
+use App\Events\MessageDeleted; // Новий івент для видалення повідомлень
+use App\Events\ChatDeleted; // Новий івент для видалення чатів
 
 class ChatController extends Controller
 {
@@ -18,52 +20,45 @@ class ChatController extends Controller
      */
     public function loadChat(Request $request)
     {
-        $recipientId = $request->input('recipient_id'); // Для приватних
-        $chatIdRequest = $request->input('chat_id');    // Для груп
+        $recipientId = $request->input('recipient_id');
+        $chatIdRequest = $request->input('chat_id');
         $currentUser = Auth::user();
 
         $chat = null;
 
-        // --- Завантаження ГРУПОВОГО чату ---
         if ($chatIdRequest) {
-            $chat = $currentUser->chats()->with('participants')->find($chatIdRequest); // Завантажуємо учасників одразу
+            $chat = $currentUser->chats()->with('participants')->find($chatIdRequest);
             if (!$chat || $chat->type !== 'group') {
                  Log::warning('Attempt to load non-existent or non-group chat', ['chatId' => $chatIdRequest, 'userId' => $currentUser->id]);
                  return response()->json(['error' => 'Group chat not found or you are not a participant.'], 404);
             }
         }
-        // --- Завантаження ПРИВАТНОГО чату (або створення) ---
         elseif ($recipientId) {
-             // ---> ВАЖЛИВА ПЕРЕВІРКА <---
             if (empty($recipientId) || !is_numeric($recipientId) || $recipientId == $currentUser->id) {
                  Log::error('Invalid recipientId received in loadChat', ['recipientId' => $recipientId, 'userId' => $currentUser->id]);
                  return response()->json(['error' => 'Invalid recipient ID provided.'], 400);
             }
-            $recipientId = (int)$recipientId; // Перетворюємо на число
+            $recipientId = (int)$recipientId;
 
-            // Перевіряємо, чи існує такий користувач
             $recipientUser = User::find($recipientId);
             if (!$recipientUser) {
                  Log::warning('Recipient user not found', ['recipientId' => $recipientId, 'userId' => $currentUser->id]);
                  return response()->json(['error' => 'Recipient user not found.'], 404);
             }
 
-            // Шукаємо існуючий приватний чат
             $chat = $currentUser->chats()
                 ->where('type', 'private')
                 ->whereHas('participants', function ($query) use ($recipientId) {
                     $query->where('user_id', $recipientId);
                 })
-                ->with('participants') // Завантажуємо учасників одразу
+                ->with('participants')
                 ->first();
 
-            // Якщо чату НЕ існує - створюємо його
             if (!$chat) {
                  Log::info('Creating new private chat', ['user1' => $currentUser->id, 'user2' => $recipientId]);
                 try {
                     $chat = Chat::create(['type' => 'private']);
                     $chat->participants()->attach([$currentUser->id, $recipientId]);
-                    // Перезавантажуємо чат з учасниками після attach
                     $chat->load('participants');
                      Log::info('New private chat created successfully', ['chatId' => $chat->id]);
                 } catch (\Exception $e) {
@@ -72,26 +67,23 @@ class ChatController extends Controller
                 }
             }
         }
-        // --- Якщо не передано ані recipient_id, ані chat_id ---
         else {
              Log::warning('Missing recipient_id or chat_id in loadChat request', ['userId' => $currentUser->id]);
             return response()->json(['error' => 'Missing recipient_id or chat_id.'], 400);
         }
 
-        // --- Завантаження повідомлень для ЗНАЙДЕНОГО або СТВОРЕНОГО чату ---
         if (!$chat) {
              Log::error('Chat object is null after loading/creation attempt', ['userId' => $currentUser->id, 'recipientId' => $recipientId, 'chatIdRequest' => $chatIdRequest]);
              return response()->json(['error' => 'Chat could not be loaded or created.'], 500);
         }
 
         $messages = $chat->messages()
-            ->with('user') // Завантажуємо відправника
+            ->with('user')
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Повертаємо все у форматі JSON
         return response()->json([
-            'chat' => $chat, // Включає учасників завдяки ->with('participants') та ->load('participants')
+            'chat' => $chat,
             'messages' => $messages
         ]);
     }
@@ -125,7 +117,7 @@ class ChatController extends Controller
             $message->load('user');
 
              Log::info('Broadcasting MessageSent event', ['messageId' => $message->id, 'chatId' => $chatId]);
-            broadcast(new MessageSent($message))->toOthers(); // ОСЬ ТУТ ПОТРІБЕН MessageSent
+            broadcast(new MessageSent($message))->toOthers();
 
             return response()->json($message);
 
@@ -173,6 +165,73 @@ class ChatController extends Controller
         } catch (\Exception $e) {
              Log::error('Failed to create group chat', ['error' => $e->getMessage(), 'userId' => $currentUser->id, 'title' => $validated['title']]);
              return response()->json(['error' => 'Failed to create group chat.'], 500);
+        }
+    }
+
+    /**
+     * Видаляє повідомлення (тільки власне)
+     */
+    public function deleteMessage(Request $request, $messageId)
+    {
+        $currentUser = Auth::user();
+        
+        try {
+            $message = Message::where('user_id', $currentUser->id)
+                ->where('id', $messageId)
+                ->firstOrFail();
+
+            $chatId = $message->chat_id;
+            $message->delete();
+
+            // Транслюємо інформацію про видалення всім учасникам чату
+            broadcast(new MessageDeleted($messageId, $chatId))->toOthers();
+
+            Log::info('Message deleted successfully', ['messageId' => $messageId, 'userId' => $currentUser->id]);
+            return response()->json(['success' => true, 'message' => 'Повідомлення видалено']);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to delete message', ['error' => $e->getMessage(), 'messageId' => $messageId, 'userId' => $currentUser->id]);
+            return response()->json(['error' => 'Повідомлення не знайдено або у вас немає прав на його видалення.'], 403);
+        }
+    }
+
+    /**
+     * Видаляє чат (тільки для приватних чатів або якщо користувач є учасником групового чату)
+     */
+    public function deleteChat(Request $request, $chatId)
+    {
+        $currentUser = Auth::user();
+        
+        try {
+            $chat = $currentUser->chats()->findOrFail($chatId);
+
+            // Для приватних чатів - видаляємо зв'язок учасника
+            if ($chat->type === 'private') {
+                $chat->participants()->detach($currentUser->id);
+                
+                // Якщо в чаті не залишилося учасників - видаляємо чат повністю
+                if ($chat->participants()->count() === 0) {
+                    $chat->messages()->delete();
+                    $chat->delete();
+                    broadcast(new ChatDeleted($chatId))->toOthers();
+                }
+                
+                Log::info('User left private chat', ['chatId' => $chatId, 'userId' => $currentUser->id]);
+                return response()->json(['success' => true, 'message' => 'Чат видалено']);
+            }
+            
+            // Для групових чатів - тільки адміністратор може видалити (тут можна додати перевірку на роль)
+            elseif ($chat->type === 'group') {
+                // Проста перевірка - якщо користувач є учасником, він може "покинути" групу
+                $chat->participants()->detach($currentUser->id);
+                
+                Log::info('User left group chat', ['chatId' => $chatId, 'userId' => $currentUser->id]);
+                return response()->json(['success' => true, 'message' => 'Ви вийшли з групи']);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Failed to delete chat', ['error' => $e->getMessage(), 'chatId' => $chatId, 'userId' => $currentUser->id]);
+            return response()->json(['error' => 'Чат не знайдено або у вас немає прав на його видалення.'], 403);
         }
     }
 }

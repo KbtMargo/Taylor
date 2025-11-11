@@ -35,11 +35,16 @@
     #message-input { flex-grow: 1; border: 1px solid #ccc; border-radius: 20px; padding: 8px 12px; }
     #send-message-button { background: none; border: none; cursor: pointer; padding: 0 10px; }
     #send-message-button svg { width: 24px; height: 24px; color: #007bff; }
-    .message-bubble { max-width: 80%; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; width: fit-content; position: relative; }
+    .message-bubble { max-width: 80%; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; width: fit-content; position: relative; display: flex; align-items: flex-start; gap: 8px; }
     .message-bubble.incoming { background-color: #e9e9eb; color: #000; align-self: flex-start; }
-    .message-bubble.outgoing { background-color: #007bff; color: white; align-self: flex-end; }
+    .message-bubble.outgoing { background-color: #007bff; color: white; align-self: flex-end; justify-content: flex-end; }
     .message-bubble .message-user { font-size: 0.8rem; font-weight: bold; margin-bottom: 4px; color: #6c757d; }
     .message-bubble .message-content { word-wrap: break-word; }
+    .message-content-wrapper { flex-grow: 1; }
+    .message-actions { opacity: 0; transition: opacity 0.2s; }
+    .message-bubble:hover .message-actions { opacity: 1; }
+    .own-message .message-content-wrapper { order: 1; }
+    .own-message .message-actions { order: 2; }
 
     #create-group-view {
         position: absolute;
@@ -63,6 +68,37 @@
     .icon-user::before { content: '👤'; margin-right: 5px; }
     .icon-group::before { content: '👥'; margin-right: 5px; }
 
+    .btn-delete-message {
+        background: none;
+        border: none;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 16px;
+        margin-left: 8px;
+        opacity: 0.7;
+        padding: 2px 6px;
+    }
+
+    .btn-delete-message:hover {
+        opacity: 1;
+        background: rgba(255, 68, 68, 0.1);
+        border-radius: 3px;
+    }
+
+    #delete-chat-btn {
+        background: none;
+        border: none;
+        color: #ff4444;
+        cursor: pointer;
+        font-size: 18px;
+        margin-left: auto;
+        padding: 5px 10px;
+    }
+
+    #delete-chat-btn:hover {
+        background: rgba(255, 68, 68, 0.1);
+        border-radius: 4px;
+    }
   </style>
 
 </head>
@@ -212,275 +248,381 @@
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@^1.11.0/dist/echo.iife.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', (event) => {
+let currentChatId = null;
+let currentChatType = null;
+let echoInstance = null;
+let currentUserId = null;
 
-    const chatWindow = document.getElementById('chat-window');
-    if (!chatWindow) return; 
+window.deleteMessage = function(messageId) {
+    if (!confirm('Ви впевнені, що хочете видалити це повідомлення?')) return;
 
-    let currentChatId = null; 
-    let currentChatType = null;
-    let currentChatMessages = {};
-    const currentUserId = chatWindow.dataset.currentUserId;
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    fetch(`/chat/message/${messageId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement) messageElement.remove();
+        } else {
+            alert('Помилка при видаленні повідомлення: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Помилка при видаленні повідомлення');
+    });
+}
+
+window.deleteChat = function(chatId) {
+    const activeChat = document.querySelector('.chat-list-item.active');
+    const chatType = activeChat ? activeChat.dataset.type : 'private';
+    const message = chatType === 'group' 
+        ? 'Ви впевнені, що хочете покинути цю групу?' 
+        : 'Ви впевнені, що хочете видалити цей чат?';
+
+    if (!confirm(message)) return;
+
+    fetch(`/chat/${chatId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const chatElement = document.querySelector(`.chat-list-item[data-id="${chatId}"]`);
+            if (chatElement) chatElement.remove();
+            showScreen('recipients');
+            alert(data.message);
+        } else {
+            alert('Помилка при видаленні чату: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Помилка при видаленні чату');
+    });
+}
+
+function displayMessage(message) {
+    const messageList = document.getElementById('message-list');
+    if (!messageList || messageList.querySelector(`[data-message-id="${message.id}"]`)) return;
+
+    const isOwnMessage = message.user_id == currentUserId;
+    const senderName = (message.user && message.user.name) ? message.user.name : 'Unknown';
+
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message-bubble');
+    messageElement.dataset.messageId = message.id;
+
+    if (isOwnMessage) {
+        messageElement.classList.add('outgoing');
+    } else {
+        messageElement.classList.add('incoming');
+    }
+
+    const messageContentWrapper = document.createElement('div');
+    messageContentWrapper.classList.add('message-content-wrapper');
+
+    if (currentChatType === 'group' && !isOwnMessage) {
+        const userName = document.createElement('div');
+        userName.classList.add('message-user');
+        userName.innerText = senderName;
+        messageContentWrapper.appendChild(userName);
+    }
+
+    const content = document.createElement('div');
+    content.classList.add('message-content');
+    content.innerText = message.content;
+    messageContentWrapper.appendChild(content);
+
+    const time = document.createElement('small');
+    time.classList.add('message-time');
+    time.innerText = new Date(message.created_at).toLocaleTimeString();
+    messageContentWrapper.appendChild(time);
+
+    messageElement.appendChild(messageContentWrapper);
+
+    if (isOwnMessage) {
+        const messageActions = document.createElement('div');
+        messageActions.classList.add('message-actions');
+        
+        const deleteButton = document.createElement('button');
+        deleteButton.classList.add('btn-delete-message');
+        deleteButton.innerHTML = '×';
+        deleteButton.title = 'Видалити повідомлення';
+        deleteButton.onclick = () => deleteMessage(message.id);
+        
+        messageActions.appendChild(deleteButton);
+        messageElement.appendChild(messageActions);
+    }
+
+    messageList.appendChild(messageElement);
+}
+
+function addDeleteChatButton(chatId, chatType) {
+    const messageHeader = document.getElementById('message-header');
+    const oldDeleteBtn = document.getElementById('delete-chat-btn');
+    if (oldDeleteBtn) oldDeleteBtn.remove();
     
-    const toggleButton = document.getElementById('chat-toggle-button');
-    const closeButton = document.getElementById('chat-close-button');
+    const deleteButton = document.createElement('button');
+    deleteButton.id = 'delete-chat-btn';
+    deleteButton.innerHTML = '🗑️';
+    deleteButton.title = chatType === 'group' ? 'Покинути групу' : 'Видалити чат';
+    deleteButton.onclick = () => deleteChat(chatId);
+    
+    messageHeader.appendChild(deleteButton);
+}
+
+function scrollToBottom() {
+    const messageList = document.getElementById('message-list');
+    setTimeout(() => { if (messageList) messageList.scrollTop = messageList.scrollHeight; }, 50);
+}
+
+function showScreen(screenName) {
     const recipientListScreen = document.getElementById('recipient-list');
     const messageViewScreen = document.getElementById('message-view');
-    const backButton = document.getElementById('back-to-list');
-    const chatListItems = document.querySelectorAll('.chat-list-item');
-    const chatHeaderTitle = document.getElementById('chat-header-title');
-    const chatWithName = document.getElementById('chat-with-name');
-    const messageList = document.getElementById('message-list');
-    const messageInput = document.getElementById('message-input');
-    const sendButton = document.getElementById('send-message-button');
-
-    const createGroupBtn = document.getElementById('create-group-btn');
     const createGroupView = document.getElementById('create-group-view');
-    const cancelGroupBtn = document.getElementById('cancel-group-btn');
-    const createGroupForm = document.getElementById('create-group-form');
+    const chatHeaderTitle = document.getElementById('chat-header-title');
+    
+    recipientListScreen.style.display = 'none';
+    messageViewScreen.style.display = 'none';
+    createGroupView.style.display = 'none';
+    chatHeaderTitle.style.display = 'none';
+
+    if (screenName === 'messages') {
+        messageViewScreen.style.display = 'flex';
+    } else if (screenName === 'createGroup') {
+        createGroupView.style.display = 'flex';
+        chatHeaderTitle.style.display = 'block';
+        chatHeaderTitle.innerText = 'Створення групи';
+    } else {
+        recipientListScreen.style.display = 'flex';
+        chatHeaderTitle.style.display = 'block';
+        chatHeaderTitle.innerText = 'Чати';
+        currentChatId = null;
+        currentChatType = null;
+    }
+}
+
+async function loadChat(itemId, itemType, itemName) {
+    const messageList = document.getElementById('message-list');
+    const chatWithName = document.getElementById('chat-with-name');
+    
+    if (messageList) messageList.innerHTML = ''; 
+    if (chatWithName) chatWithName.innerText = itemName;
+    showScreen('messages');
+
+    if (currentChatId && echoInstance) {
+        try { echoInstance.leave('chat.' + currentChatId); } catch (e) { console.warn("Error leaving channel:", e); }
+    }
+
+    currentChatId = null; 
+    currentChatType = itemType;
+
+    let requestBody = {};
+    let url = '/chat/load';
+
+    if (itemType === 'user') {
+        requestBody.recipient_id = itemId;
+    } else {
+        requestBody.chat_id = itemId;
+    }
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') 
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) throw new Error(`Network response error (${response.status})`);
+        const data = await response.json();
+        
+        currentChatId = data.chat.id; 
+        currentChatType = data.chat.type;
+        
+        addDeleteChatButton(currentChatId, currentChatType);
+        
+        data.messages.forEach(msg => displayMessage(msg));
+        
+        scrollToBottom();
+        subscribeToChannel(currentChatId); 
+        
+    } catch (error) {
+        console.error('Error loading chat:', error);
+        if (chatWithName) chatWithName.innerText = 'Помилка';
+    }
+}
+
+function subscribeToChannel(chatId) {
+    if (!chatId || !echoInstance) return;
+
+    try {
+        echoInstance.private('chat.' + chatId)
+            .listen('MessageSent', (e) => {
+                if (!e || !e.message) return;
+                if (chatId == currentChatId) {
+                    if (!document.querySelector(`[data-message-id="${e.message.id}"]`)) {
+                        displayMessage(e.message);
+                        scrollToBottom();
+                    }
+                }
+            })
+            .listen('MessageDeleted', (e) => {
+                const messageElement = document.querySelector(`[data-message-id="${e.messageId}"]`);
+                if (messageElement) messageElement.remove();
+            })
+            .listen('ChatDeleted', (e) => {
+                if (currentChatId == e.chatId) {
+                    showScreen('recipients');
+                    alert('Чат було видалено');
+                }
+                const chatElement = document.querySelector(`.chat-list-item[data-id="${e.chatId}"]`);
+                if (chatElement) chatElement.remove();
+            });
+    } catch (e) { console.error("Subscription failed:", e); }
+}
+
+async function sendMessage() {
+    const messageInput = document.getElementById('message-input');
+    if (!messageInput) return; 
+    const content = messageInput.value.trim();
+    if (content === '' || !currentChatId) return;
+
+    const tempId = 'temp_' + Date.now(); 
+    const pendingMessage = { id: tempId, user_id: currentUserId, content: content, user: { name: 'Me' } };
+    
+    displayMessage(pendingMessage); 
+    scrollToBottom();
+    messageInput.value = '';
+
+    try {
+        const response = await fetch('/chat/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
+            body: JSON.stringify({ chat_id: currentChatId, content: content })
+        });
+
+        if (!response.ok) throw new Error(`Send message error (${response.status})`);
+        const newMessage = await response.json();
+        
+        const tempBubble = document.querySelector(`[data-message-id="${tempId}"]`);
+        if (tempBubble) tempBubble.dataset.messageId = newMessage.id;
+        
+    } catch (error) {
+        console.error('Error sending message:', error);
+        const tempBubble = document.querySelector(`[data-message-id="${tempId}"]`);
+        if (tempBubble) {
+            const contentDiv = tempBubble.querySelector('.message-content');
+            if (contentDiv) contentDiv.innerText = "Помилка"; 
+        }
+    }
+}
+
+function clearGroupForm() {
     const groupTitleInput = document.getElementById('group-title');
     const groupParticipantsList = document.getElementById('group-participants-list');
     const groupTitleError = document.getElementById('group-title-error');
     const groupUsersError = document.getElementById('group-users-error');
+    
+    if (groupTitleInput) groupTitleInput.value = '';
+    if (groupParticipantsList) {
+        const checkboxes = groupParticipantsList.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = false);
+    }
+    if (groupTitleError) groupTitleError.innerText = '';
+    if (groupUsersError) groupUsersError.innerText = '';
+}
 
-    if (typeof window.io === 'undefined') { console.error('Socket.IO is NOT loaded.'); return; }
-    if (typeof window.Echo === 'undefined') { console.error('Laravel Echo is NOT loaded.'); return; }
+async function handleCreateGroupSubmit(event) {
+    event.preventDefault();
+    const groupTitleError = document.getElementById('group-title-error');
+    const groupUsersError = document.getElementById('group-users-error');
+    const groupTitleInput = document.getElementById('group-title');
+    const groupParticipantsList = document.getElementById('group-participants-list');
+    
+    groupTitleError.innerText = '';
+    groupUsersError.innerText = '';
+    const title = groupTitleInput.value.trim();
+    const selectedUsers = Array.from(groupParticipantsList.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
 
-    let Echo; 
+    let hasError = false;
+    if (!title) {
+        groupTitleError.innerText = 'Назва групи обов\'язкова.';
+        hasError = true;
+    }
+    if (selectedUsers.length < 2) {
+        groupUsersError.innerText = 'Виберіть щонайменше 2 учасників.';
+        hasError = true;
+    }
+    if (hasError) return;
+
     try {
-        Echo = new window.Echo({
+        const response = await fetch('/chat/create-group', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
+            body: JSON.stringify({ title: title, user_ids: selectedUsers })
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+            if(result.errors) {
+                if (result.errors.title) groupTitleError.innerText = result.errors.title[0];
+                if (result.errors.user_ids) groupUsersError.innerText = result.errors.user_ids[0];
+            } else {
+                groupUsersError.innerText = result.error || 'Помилка створення групи.';
+            }
+            throw new Error(result.error || 'Validation failed');
+        }
+
+        alert('Групу "' + result.title + '" створено!');
+        clearGroupForm();
+        showScreen('recipients');
+        window.location.reload();
+
+    } catch (error) {
+        console.error('Error creating group:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    const chatWindow = document.getElementById('chat-window');
+    if (!chatWindow) return; 
+
+    currentUserId = chatWindow.dataset.currentUserId;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    const toggleButton = document.getElementById('chat-toggle-button');
+    const closeButton = document.getElementById('chat-close-button');
+    const backButton = document.getElementById('back-to-list');
+    const chatListItems = document.querySelectorAll('.chat-list-item');
+    const sendButton = document.getElementById('send-message-button');
+    const messageInput = document.getElementById('message-input');
+    const createGroupBtn = document.getElementById('create-group-btn');
+    const createGroupView = document.getElementById('create-group-view');
+    const cancelGroupBtn = document.getElementById('cancel-group-btn');
+    const createGroupForm = document.getElementById('create-group-form');
+
+    try {
+        echoInstance = new window.Echo({
             broadcaster: 'socket.io',
-            host: window.location.hostname + ':6001', 
+            host: window.location.hostname + ':6001',
             auth: { headers: { 'X-CSRF-TOKEN': csrfToken } },
         });
-    } catch (e) { console.error('Failed to initialize Echo.', e); return; }
-
-    function displayMessage(message) {
-        if (messageList.querySelector(`[data-message-id="${message.id}"]`)) return;
-
-        const bubble = document.createElement('div');
-        bubble.classList.add('message-bubble');
-        bubble.dataset.messageId = message.id; 
-
-        const isOutgoing = message.user_id == currentUserId;
-        const senderName = (message.user && message.user.name) ? message.user.name : 'Unknown';
-
-        bubble.classList.add(isOutgoing ? 'outgoing' : 'incoming');
-
-        if (currentChatType === 'group' || !isOutgoing) {
-            const userName = document.createElement('div');
-            userName.classList.add('message-user');
-            userName.innerText = isOutgoing ? 'Ви' : senderName;
-             if (currentChatType !== 'group' && isOutgoing) { userName.style.display = 'none'; }
-            bubble.appendChild(userName);
-        }
-
-        const content = document.createElement('div');
-        content.classList.add('message-content');
-        content.innerText = message.content;
-        bubble.appendChild(content);
-
-        messageList.appendChild(bubble);
-    }
-
-    function scrollToBottom() {
-        setTimeout(() => { if (messageList) messageList.scrollTop = messageList.scrollHeight; }, 50); 
-    }
-
-    function showScreen(screenName) {
-         recipientListScreen.style.display = 'none';
-         messageViewScreen.style.display = 'none';
-         createGroupView.style.display = 'none';
-         chatHeaderTitle.style.display = 'none'; 
-
-        if (screenName === 'messages') {
-            messageViewScreen.style.display = 'flex';
-        } else if (screenName === 'createGroup') {
-             createGroupView.style.display = 'flex';
-             chatHeaderTitle.style.display = 'block';
-             chatHeaderTitle.innerText = 'Створення групи';
-        } else {
-            recipientListScreen.style.display = 'flex';
-            chatHeaderTitle.style.display = 'block'; 
-            chatHeaderTitle.innerText = 'Чати';
-            currentChatId = null; 
-            currentChatType = null;
-        }
-    }
-    
-    function clearGroupForm() {
-         if (groupTitleInput) groupTitleInput.value = '';
-         if (groupParticipantsList) {
-              const checkboxes = groupParticipantsList.querySelectorAll('input[type="checkbox"]');
-              checkboxes.forEach(cb => cb.checked = false);
-         }
-         if (groupTitleError) groupTitleError.innerText = '';
-         if (groupUsersError) groupUsersError.innerText = '';
-    }
-
-    async function loadChat(itemId, itemType, itemName) {
-        if (messageList) messageList.innerHTML = ''; 
-        if (chatWithName) chatWithName.innerText = itemName;
-        showScreen('messages');
-
-        if (currentChatId && typeof Echo !== 'undefined') {
-             try { Echo.leave('chat.' + currentChatId); } catch (e) { console.warn("Error leaving channel:", e); }
-        }
-        currentChatId = null; 
-        currentChatType = itemType;
-
-        let requestBody = {};
-        let url = '/chat/load';
-
-        if (itemType === 'user') {
-            requestBody.recipient_id = itemId;
-        } else {
-             requestBody.chat_id = itemId;
-        }
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                body: JSON.stringify(requestBody)
-            });
-
-            if (!response.ok) throw new Error(`Network response error (${response.status})`);
-            const data = await response.json();
-            
-            currentChatId = data.chat.id; 
-            currentChatType = data.chat.type;
-            
-            currentChatMessages[currentChatId] = data.messages;
-            data.messages.forEach(msg => displayMessage(msg));
-            
-            scrollToBottom();
-            subscribeToChannel(currentChatId); 
-            
-        } catch (error) {
-            console.error('Error loading chat:', error);
-            if (chatWithName) chatWithName.innerText = 'Помилка';
-        }
-    }
-
-    async function sendMessage() {
-        if (!messageInput) return; 
-        const content = messageInput.value.trim();
-        if (content === '' || !currentChatId) return;
-
-        const tempId = 'temp_' + Date.now(); 
-        const pendingMessage = { id: tempId, user_id: currentUserId, content: content, user: { name: 'Me' } };
-        
-        displayMessage(pendingMessage); 
-        scrollToBottom();
-        messageInput.value = '';
-
-        try {
-            const response = await fetch('/chat/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                body: JSON.stringify({ chat_id: currentChatId, content: content })
-            });
-
-            if (!response.ok) throw new Error(`Send message error (${response.status})`);
-            const newMessage = await response.json();
-            
-            const tempBubble = messageList.querySelector(`[data-message-id="${tempId}"]`);
-            if (tempBubble) {
-                tempBubble.dataset.messageId = newMessage.id; 
-                if (newMessage) {
-                    if(currentChatMessages[currentChatId]) {
-                        const index = currentChatMessages[currentChatId].findIndex(m => m.id === tempId);
-                        if (index > -1) currentChatMessages[currentChatId][index] = newMessage;
-                        else currentChatMessages[currentChatId].push(newMessage);
-                    }
-                }
-            } else {
-                 displayMessage(newMessage);
-                 scrollToBottom();
-                 if(currentChatMessages[currentChatId]) currentChatMessages[currentChatId].push(newMessage);
-            }
-        } catch (error) {
-            console.error('Error sending message:', error);
-            const tempBubble = messageList.querySelector(`[data-message-id="${tempId}"]`);
-            if (tempBubble) {
-                const contentDiv = tempBubble.querySelector('.message-content');
-                if (contentDiv) contentDiv.innerText = "Помилка"; 
-                const errorIcon = document.createElement('span');
-                errorIcon.innerText = ' ⚠️'; errorIcon.style.color = 'red';
-                tempBubble.appendChild(errorIcon);
-            }
-        }
-    }
-    
-    async function handleCreateGroupSubmit(event) {
-        event.preventDefault();
-        groupTitleError.innerText = '';
-        groupUsersError.innerText = '';
-        const title = groupTitleInput.value.trim();
-        const selectedUsers = Array.from(groupParticipantsList.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
-
-        let hasError = false;
-        if (!title) {
-             groupTitleError.innerText = 'Назва групи обов\'язкова.';
-             hasError = true;
-        }
-        if (selectedUsers.length < 2) {
-             groupUsersError.innerText = 'Виберіть щонайменше 2 учасників.';
-             hasError = true;
-        }
-        if (hasError) return;
-
-        try {
-            const response = await fetch('/chat/group/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                body: JSON.stringify({ title: title, user_ids: selectedUsers })
-            });
-            const result = await response.json();
-
-            if (!response.ok) {
-                 if(result.errors) {
-                    if (result.errors.title) groupTitleError.innerText = result.errors.title[0];
-                    if (result.errors.user_ids) groupUsersError.innerText = result.errors.user_ids[0];
-                 } else {
-                     groupUsersError.innerText = result.error || 'Помилка створення групи.';
-                 }
-                 throw new Error(result.error || 'Validation failed');
-            }
-
-            alert('Групу "' + result.title + '" створено!');
-             clearGroupForm();
-             showScreen('recipients');
-
-        } catch (error) {
-            console.error('Error creating group:', error);
-        }
-    }
-
-
-    function subscribeToChannel(chatId) {
-        if (!chatId || !Echo) return; 
-
-        try {
-            Echo.private('chat.' + chatId)
-                .stopListening('MessageSent') 
-                .listen('MessageSent', (e) => {
-                    if (!e || !e.message) { console.error("Invalid event:", e); return; }
-                    
-                    if(currentChatMessages[chatId] && !currentChatMessages[chatId].some(m => m.id === e.message.id)) {
-                        currentChatMessages[chatId].push(e.message);
-                    }
-
-                    if (chatId == currentChatId) { 
-                        if (!messageList.querySelector(`[data-message-id="${e.message.id}"]`)) {
-                            displayMessage(e.message);
-                            scrollToBottom();
-                        }
-                    }
-                });
-        } catch (e) { console.error("Subscription failed:", e); }
+    } catch (e) {
+        console.error('Failed to initialize Echo.', e);
+        return;
     }
 
     if(toggleButton) { 
@@ -495,8 +637,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         closeButton.addEventListener('click', () => {
             if (chatWindow) chatWindow.style.display = 'none';
             if (toggleButton) toggleButton.style.display = 'flex';
-            if (currentChatId && typeof Echo !== 'undefined') {
-                try { Echo.leave('chat.' + currentChatId); } catch (e) {}
+            if (currentChatId && echoInstance) {
+                try { echoInstance.leave('chat.' + currentChatId); } catch (e) {}
                 currentChatId = null; currentChatType = null;
             }
         });
@@ -516,8 +658,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     if(backButton) { 
         backButton.addEventListener('click', () => {
             showScreen('recipients');
-            if (currentChatId && typeof Echo !== 'undefined') {
-                try { Echo.leave('chat.' + currentChatId); } catch (e) {}
+            if (currentChatId && echoInstance) {
+                try { echoInstance.leave('chat.' + currentChatId); } catch (e) {}
                 currentChatId = null; currentChatType = null;
             }
         });
@@ -529,24 +671,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
              showScreen('createGroup');
         });
     }
-     if(cancelGroupBtn) {
+    
+    if(cancelGroupBtn) {
          cancelGroupBtn.addEventListener('click', () => {
              showScreen('recipients');
          });
-     }
-     if(createGroupForm) {
+    }
+    
+    if(createGroupForm) {
          createGroupForm.addEventListener('submit', handleCreateGroupSubmit);
-     }
+    }
 
     if(sendButton) sendButton.addEventListener('click', sendMessage);
-     if(messageInput) { 
+    
+    if(messageInput) { 
         messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
         });
-     }
-    
+    }
 });
 </script>
-
 </body>
 </html>
