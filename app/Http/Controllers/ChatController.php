@@ -121,7 +121,7 @@ class ChatController extends Controller
         }
     }
 
-    public function createGroupChat(Request $request)
+    public function storeGroup(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:100',
