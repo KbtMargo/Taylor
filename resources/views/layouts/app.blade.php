@@ -244,7 +244,7 @@
     </div>
 @endauth
 
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@^1.11.0/dist/echo.iife.js"></script>
 
 <script>
@@ -345,7 +345,8 @@ function displayMessage(message) {
 
     const time = document.createElement('small');
     time.classList.add('message-time');
-    time.innerText = new Date(message.created_at).toLocaleTimeString();
+    const dateStr = message.created_at ? message.created_at : new Date();
+    time.innerText = new Date(dateStr).toLocaleTimeString();
     messageContentWrapper.appendChild(time);
 
     messageElement.appendChild(messageContentWrapper);
@@ -472,6 +473,11 @@ function subscribeToChannel(chatId) {
         echoInstance.private('chat.' + chatId)
             .listen('MessageSent', (e) => {
                 if (!e || !e.message) return;
+                
+                if (e.message.user_id == currentUserId) {
+                    return;
+                }
+
                 if (chatId == currentChatId) {
                     if (!document.querySelector(`[data-message-id="${e.message.id}"]`)) {
                         displayMessage(e.message);
@@ -479,11 +485,11 @@ function subscribeToChannel(chatId) {
                     }
                 }
             })
-            .listen('MessageDeleted', (e) => {
-                const messageElement = document.querySelector(`[data-message-id="${e.messageId}"]`);
-                if (messageElement) messageElement.remove();
+            .listen('.message.deleted', (e) => { 
+            const messageElement = document.querySelector(`[data-message-id="${e.messageId}"]`);
+            if (messageElement) messageElement.remove();
             })
-            .listen('ChatDeleted', (e) => {
+            .listen('.chat.deleted', (e) => {
                 if (currentChatId == e.chatId) {
                     showScreen('recipients');
                     alert('Чат було видалено');
@@ -491,6 +497,7 @@ function subscribeToChannel(chatId) {
                 const chatElement = document.querySelector(`.chat-list-item[data-id="${e.chatId}"]`);
                 if (chatElement) chatElement.remove();
             });
+
     } catch (e) { console.error("Subscription failed:", e); }
 }
 
@@ -501,7 +508,14 @@ async function sendMessage() {
     if (content === '' || !currentChatId) return;
 
     const tempId = 'temp_' + Date.now(); 
-    const pendingMessage = { id: tempId, user_id: currentUserId, content: content, user: { name: 'Me' } };
+    
+    const pendingMessage = { 
+        id: tempId, 
+        user_id: currentUserId, 
+        content: content, 
+        user: { name: 'Me' },
+        created_at: new Date().toISOString() 
+    };
     
     displayMessage(pendingMessage); 
     scrollToBottom();
@@ -615,11 +629,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const createGroupForm = document.getElementById('create-group-form');
 
     try {
+        window.Pusher = Pusher;
+
         echoInstance = new window.Echo({
-            broadcaster: 'socket.io',
-            host: window.location.hostname + ':6001',
+            broadcaster: 'pusher',
+            key: 'app-key',
+            wsHost: window.location.hostname,
+            wsPort: 6002, 
+            wssPort: 6002, 
+            forceTLS: false,
+            encrypted: false,
+            disableStats: true,
+            cluster: 'mt1',
+            enabledTransports: ['ws', 'wss'],
             auth: { headers: { 'X-CSRF-TOKEN': csrfToken } },
-        });
+        });    
     } catch (e) {
         console.error('Failed to initialize Echo.', e);
         return;
